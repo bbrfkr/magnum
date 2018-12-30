@@ -54,7 +54,7 @@ class NodeAddressOutputMapping(ServerAddressOutputMapping):
     private_ip_output_key = 'kube_minions_private'
 
 
-class K8sCenos7TemplateDefinition(k8s_template_def.K8sTemplateDefinition):
+class K8sCentos7TemplateDefinition(k8s_template_def.K8sTemplateDefinition):
     """Kubernetes template for a CentOS 7."""
 
     def __init__(self):
