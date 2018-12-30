@@ -702,7 +702,6 @@ resources:
     type: OS::Heat::SoftwareDeployment
     properties:
       actions: ['CREATE']
-      #signal_transport: HEAT_SIGNAL
       config:
         get_resource: kube_cluster_config
       server:
