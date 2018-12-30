@@ -1,5 +1,5 @@
 from magnum.drivers.heat import driver
-from magnum.drivers.k8s_cenots7_v1 import template_def
+from magnum.drivers.k8s_centos7_v1 import template_def
 
 
 class Driver(driver.HeatDriver):
