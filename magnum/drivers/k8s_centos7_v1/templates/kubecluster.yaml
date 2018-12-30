@@ -1,0 +1,11 @@
+heat_template_version: "2018-08-31"
+
+description: "Kubernetes Cluster from Magnum"
+
+parameters:
+
+resources:
+  kube-network:
+    type: OS::Neutron::Net
+
+outputs:
