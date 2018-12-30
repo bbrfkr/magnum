@@ -404,7 +404,7 @@ resources:
       group: ungrouped
       config:
         str_replace:
-          template: {get_file: ./fragments/write-heat-params-master.yaml}
+          template: {get_file: ../fragments/write-heat-params-master.yaml}
           params:
             "$PROMETHEUS_MONITORING": {get_param: prometheus_monitoring}
             "$KUBE_API_PUBLIC_ADDRESS": {get_attr: [api_address_switch, public_ip]}
