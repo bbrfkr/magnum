@@ -1,6 +1,6 @@
 import os
 
-from magnum.drivers.heat import k8s_centos7_def as kctd
+from magnum.drivers.heat import k8s_centos7_template_def as kctd
 
 
 class Centos7K8sTemplateDefinition(kctd.K8sCentos7TemplateDefinition):
