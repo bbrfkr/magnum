@@ -687,4 +687,27 @@ resources:
           prometheus_tag: {get_param: prometheus_tag}
           grafana_tag: {get_param: grafana_tag}
 
+  kube_cluster_config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: script
+      config:
+        list_join:
+          - " "
+          -
+            - "echo"
+            - "SoftwareConfig test"
+            - ">"
+            - "/root/software-config-test"
+
+  kube_cluster_deploy:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      actions: ['CREATE']
+      signal_transport: HEAT_SIGNAL
+      config:
+        get_resource: kube_cluster_config
+      server:
+        get_attr: [kube_masters, resource.0]
+
 outputs:
