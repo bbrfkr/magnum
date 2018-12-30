@@ -693,12 +693,10 @@ resources:
       group: script
       config:
         list_join:
-          - " "
+          - "\n"
           -
-            - "echo"
-            - "SoftwareConfig test"
-            - ">"
-            - "/root/software-config-test"
+            - "#!/bin/sh"
+            - "echo SoftwareConfig test > /root/software-config-test"
 
   kube_cluster_deploy:
     type: OS::Heat::SoftwareDeployment
