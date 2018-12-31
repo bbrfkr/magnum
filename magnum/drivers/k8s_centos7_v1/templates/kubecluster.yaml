@@ -1,4 +1,4 @@
-heat_template_version: "2018-08-31"
+heat_template_version: "2015-10-15"
 
 description: "Kubernetes Cluster from Magnum"
 
