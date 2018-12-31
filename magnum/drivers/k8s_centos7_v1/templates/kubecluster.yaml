@@ -696,7 +696,7 @@ resources:
           - "\n"
           -
             - "#!/bin/sh"
-            - "echo SoftwareConfig test > /root/software-config-test"
+            - "echo SoftwareDeployment test > /root/software-deployment-test"
 
   kube_cluster_deploy:
     type: OS::Heat::SoftwareDeployment
