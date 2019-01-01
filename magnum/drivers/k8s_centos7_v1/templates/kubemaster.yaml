@@ -485,13 +485,19 @@ resources:
             $OPENSTACK_CA: {get_param: openstack_ca}
           template: {get_file: ../fragments/install-openstack-ca.sh}
 
+  disable_selinux:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/disable-selinux.sh}
+
   kube_master_init:
     type: OS::Heat::MultipartMime
     properties:
       parts:
         - config: {get_resource: write_heat_params}
         - config: {get_resource: install_openstack_ca}
-        
+        - config: {get_resource: disable_selinux}
 
   kube-master:
     type: OS::Nova::Server
