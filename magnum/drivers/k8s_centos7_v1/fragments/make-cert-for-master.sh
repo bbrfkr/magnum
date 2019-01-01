@@ -195,13 +195,8 @@ generate_certificates scheduler ${cert_dir}/scheduler.conf
 echo -e "${KUBE_SERVICE_ACCOUNT_KEY}" > ${cert_dir}/service_account.key
 echo -e "${KUBE_SERVICE_ACCOUNT_PRIVATE_KEY}" > ${cert_dir}/service_account_private.key
 
-# Common certs and key are created for both etcd and kubernetes services.
-# Both etcd and kube user should have permission to access the certs and key.
-groupadd kube_etcd
-usermod -a -G kube_etcd etcd
-usermod -a -G kube_etcd kube
+# set permission and create certs direcotry for etcd
 chmod 550 "${cert_dir}"
-chown -R kube:kube_etcd "${cert_dir}"
-chmod 440 $cert_dir/server.key
+chmod 440 $cert_dir/kubernetes.key
 mkdir -p /etc/etcd/certs
 cp ${cert_dir}/* /etc/etcd/certs
