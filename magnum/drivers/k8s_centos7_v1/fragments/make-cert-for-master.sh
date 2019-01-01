@@ -63,20 +63,8 @@ cert_dir=/etc/kubernetes/certs
 mkdir -p "$cert_dir"
 CA_CERT=$cert_dir/ca.crt
 
-# Get CA certificate for this cluster
-curl $VERIFY_CA -X GET \
-    -H "X-Auth-Token: $USER_TOKEN" \
-    -H "OpenStack-API-Version: container-infra latest" \
-    $MAGNUM_URL/certificates/$CLUSTER_UUID | python -c 'import sys, json; print json.load(sys.stdin)["pem"]' > ${CA_CERT}
-
-function generate_certificates {
-    _CERT=$cert_dir/${1}.crt
-    _CSR=$cert_dir/${1}.csr
-    _KEY=$cert_dir/${1}.key
-    _CONF=$2
-
-    #Get a token by user credentials and trust
-    auth_json=$(cat << EOF
+#Get a token by user credentials and trust
+auth_json=$(cat << EOF
 {
     "auth": {
         "identity": {
@@ -94,11 +82,22 @@ function generate_certificates {
 }
 EOF
 )
+content_type='Content-Type: application/json'
+url="$AUTH_URL/auth/tokens"
+USER_TOKEN=`curl $VERIFY_CA -s -i -X POST -H "$content_type" -d "$auth_json" $url \
+    | grep -i X-Subject-Token | awk '{print $2}' | tr -d '[[:space:]]'`
 
-    content_type='Content-Type: application/json'
-    url="$AUTH_URL/auth/tokens"
-    USER_TOKEN=`curl $VERIFY_CA -s -i -X POST -H "$content_type" -d "$auth_json" $url \
-        | grep -i X-Subject-Token | awk '{print $2}' | tr -d '[[:space:]]'`
+# Get CA certificate for this cluster
+curl $VERIFY_CA -X GET \
+    -H "X-Auth-Token: $USER_TOKEN" \
+    -H "OpenStack-API-Version: container-infra latest" \
+    $MAGNUM_URL/certificates/$CLUSTER_UUID | python -c 'import sys, json; print json.load(sys.stdin)["pem"]' > ${CA_CERT}
+
+function generate_certificates {
+    _CERT=$cert_dir/${1}.crt
+    _CSR=$cert_dir/${1}.csr
+    _KEY=$cert_dir/${1}.key
+    _CONF=$2
 
     # Generate server's private key and csr
     openssl genrsa -out "${_KEY}" 4096
