@@ -475,11 +475,23 @@ resources:
             "$PROMETHEUS_TAG": {get_param: prometheus_tag}
             "$GRAFANA_TAG": {get_param: grafana_tag}
 
+  install_openstack_ca:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config:
+        str_replace:
+          params:
+            $OPENSTACK_CA: {get_param: openstack_ca}
+          template: {get_file: ../fragments/install-openstack-ca.sh}
+
   kube_master_init:
     type: OS::Heat::MultipartMime
     properties:
       parts:
         - config: {get_resource: write_heat_params}
+        - config: {get_resource: install_openstack_ca}
+        
 
   kube-master:
     type: OS::Nova::Server
