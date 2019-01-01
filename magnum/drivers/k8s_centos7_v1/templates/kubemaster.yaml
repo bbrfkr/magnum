@@ -1,4 +1,4 @@
-heat_template_version: 2014-10-16
+heat_template_version: "2018-08-31"
 
 description: >
   This is a nested stack that defines a single Kubernetes master, This stack is
@@ -6,7 +6,6 @@ description: >
   (kubecluster.yaml).
 
 parameters:
-
   name:
     type: string
     description: server name
@@ -389,7 +388,6 @@ parameters:
     description: tag of grafana container
 
 resources:
-
   api_address_switch:
     type: Magnum::ApiGatewaySwitcher
     properties:
@@ -558,7 +556,6 @@ resources:
       mountpoint: /dev/vdb
 
 outputs:
-
   OS::stack_id:
     value: { get_resource: kube-master }
 
