@@ -507,6 +507,12 @@ resources:
       group: ungrouped
       config: {get_file: ../fragments/make-kubeconfig-for-master.sh}
 
+  configure_etcd:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/configure-etcd.sh}
+
   kube_master_init:
     type: OS::Heat::MultipartMime
     properties:
@@ -517,6 +523,7 @@ resources:
         - config: {get_resource: make_cert_for_master}
         - config: {get_resource: install_kubectl}
         - config: {get_resource: make_kubeconfig_for_master}
+        - config: {get_resource: configure_etcd}
 
   kube-master:
     type: OS::Nova::Server

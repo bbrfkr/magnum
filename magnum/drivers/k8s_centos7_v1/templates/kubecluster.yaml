@@ -321,7 +321,7 @@ parameters:
   kube_tag:
     type: string
     description: tag of the k8s containers used to provision the kubernetes cluster
-    default: v1.11.1
+    default: v1.13.1
 
   etcd_tag:
     type: string
