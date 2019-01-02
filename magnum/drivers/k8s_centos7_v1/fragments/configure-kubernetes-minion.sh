@@ -13,6 +13,7 @@ if [ "$TLS_DISABLED" = "True" ]; then
     KUBE_PROTOCOL="http"
 fi
 KUBE_MASTER_URI="$KUBE_PROTOCOL://$KUBE_MASTER_IP:$KUBE_API_PORT"
+mkdir -p ${YAML_CONFIG_DIR}
 
 # install worker component binary
 wget -O /tmp/cni-plugins-amd64-v0.6.0.tgz "https://github.com/containernetworking/plugins/releases/download/v0.6.0/cni-plugins-amd64-v0.6.0.tgz"
@@ -67,13 +68,12 @@ Requires=containerd.service
 [Service]
 ExecStart=/usr/local/bin/kubelet \\
   --config=${YAML_CONFIG_DIR}/kubelet-config.yaml \\
-  --container-runtime=remote \\
-  --container-runtime-endpoint=unix:///var/run/docker.sock \\
+  --container-runtime=docker \\
   --image-pull-progress-deadline=2m \\
   --kubeconfig=${CONFIG_DIR}/kubelet.kubeconfig \\
   --network-plugin=cni \\
   --register-node=true \\
-  --hostname-override=${HOSTNAME_OVERRIDE}
+  --hostname-override=${HOSTNAME_OVERRIDE} \\
   --v=2
 Restart=on-failure
 RestartSec=5
@@ -108,7 +108,7 @@ WantedBy=multi-user.target
 EOF
 
 # wait for API server being started
-until  [ "ok" = "\$(curl --silent --cacert ${CERT_DIR}/ca.crt ${KUBE_MASTER_URI}/healthz)" ]
+until  [ "ok" = "$(curl --silent --cacert ${CERT_DIR}/ca.crt ${KUBE_MASTER_URI}/healthz)" ]
 do
     echo "Waiting for Kubernetes API..."
     sleep 5
