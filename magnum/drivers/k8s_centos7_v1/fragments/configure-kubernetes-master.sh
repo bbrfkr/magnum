@@ -8,7 +8,6 @@ CERT_DIR=/etc/kubernetes/certs
 ETCD_CERT_DIR=/etc/etcd/certs
 CONFIG_DIR=/etc/kubernetes
 YAML_CONFIG_DIR=/etc/kubernetes/config
-mkdir -p ${YAML_CONFIG_DIR}
 
 # install master component binary
 wget -O /tmp/kube-apiserver "https://storage.googleapis.com/kubernetes-release/release/${KUBE_VERSION}/bin/linux/amd64/kube-apiserver"
@@ -36,6 +35,7 @@ ExecStart=/usr/local/bin/kube-apiserver \\
   --audit-log-path=/var/log/audit.log \\
   --authorization-mode=Node,RBAC \\
   --bind-address=0.0.0.0 \\
+  --secure-port=${KUBE_API_PORT} \\
   --client-ca-file=${CERT_DIR}/ca.crt \\
   --enable-admission-plugins=NodeRestriction,${ADMISSION_CONTROL_LIST} \\
   --enable-swagger-ui=true \\

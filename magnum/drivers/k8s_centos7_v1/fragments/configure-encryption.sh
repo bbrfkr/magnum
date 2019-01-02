@@ -3,6 +3,8 @@
 . /etc/sysconfig/heat-params
 
 YAML_CONFIG_DIR=/etc/kubernetes/config
+mkdir -p ${YAML_CONFIG_DIR}
+
 cat > ${YAML_CONFIG_DIR}/encryption-config.yaml <<EOF
 kind: EncryptionConfig
 apiVersion: v1
