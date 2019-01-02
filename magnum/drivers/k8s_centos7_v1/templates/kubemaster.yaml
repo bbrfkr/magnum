@@ -603,7 +603,7 @@ resources:
     properties:
       instance_uuid: {get_resource: kube-master}
       volume_id: {get_resource: etcd_volume}
-      mountpoint: /dev/vdc
+      mountpoint: /dev/vdb
 
 outputs:
   OS::stack_id:
