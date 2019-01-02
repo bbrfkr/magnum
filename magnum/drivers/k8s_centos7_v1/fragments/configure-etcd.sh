@@ -103,5 +103,7 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# debug
+# enable and start etcd
+systemctl daemon-reload
+systemctl enable etcd
 systemctl start etcd
