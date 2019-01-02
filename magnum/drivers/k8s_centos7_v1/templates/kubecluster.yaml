@@ -326,7 +326,7 @@ parameters:
   etcd_tag:
     type: string
     description: tag of the etcd system container
-    default: v3.2.7
+    default: v3.3.9
 
   flannel_tag:
     type: string

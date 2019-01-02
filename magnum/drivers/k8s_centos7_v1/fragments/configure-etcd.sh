@@ -102,3 +102,6 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 EOF
+
+# debug
+systemctl start etcd
