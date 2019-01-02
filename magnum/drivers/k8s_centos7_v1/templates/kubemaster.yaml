@@ -387,6 +387,10 @@ parameters:
     type: string
     description: tag of grafana container
 
+  encryption_key:
+    type: string
+    description: encryption key for encrypt cluster data
+
 resources:
   api_address_switch:
     type: Magnum::ApiGatewaySwitcher
@@ -472,6 +476,7 @@ resources:
             "$KUBE_SERVICE_ACCOUNT_PRIVATE_KEY": {get_param: kube_service_account_private_key}
             "$PROMETHEUS_TAG": {get_param: prometheus_tag}
             "$GRAFANA_TAG": {get_param: grafana_tag}
+            "$ENCRYPTION_KEY": {get_param: encryption_key}
 
   install_openstack_ca:
     type: OS::Heat::SoftwareConfig
@@ -513,6 +518,12 @@ resources:
       group: ungrouped
       config: {get_file: ../fragments/configure-etcd.sh}
 
+  configure_encryption:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/configure-encryption.sh}
+
   configure_kubernetes_master:
     type: OS::Heat::SoftwareConfig
     properties:
@@ -530,6 +541,7 @@ resources:
         - config: {get_resource: install_kubectl}
         - config: {get_resource: make_kubeconfig_for_master}
         - config: {get_resource: configure_etcd}
+        - config: {get_resource: configure_encryption}
         - config: {get_resource: configure_kubernetes_master}
 
   kube-master:

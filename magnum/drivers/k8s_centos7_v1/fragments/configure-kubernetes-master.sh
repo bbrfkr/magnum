@@ -11,9 +11,9 @@ YAML_CONFIG_DIR=/etc/kubernetes/config
 mkdir -p ${YAML_CONFIG_DIR}
 
 # install master component binary
-wget -O /tmp/kube-apiserver "https://storage.googleapis.com/kubernetes-release/release/v1.13.1/bin/linux/amd64/kube-apiserver"
-wget -O /tmp/kube-controller-manager "https://storage.googleapis.com/kubernetes-release/release/v1.13.1/bin/linux/amd64/kube-controller-manager"
-wget -O /tmp/kube-scheduler "https://storage.googleapis.com/kubernetes-release/release/v1.13.1/bin/linux/amd64/kube-scheduler"
+wget -O /tmp/kube-apiserver "https://storage.googleapis.com/kubernetes-release/release/${KUBE_VERSION}/bin/linux/amd64/kube-apiserver"
+wget -O /tmp/kube-controller-manager "https://storage.googleapis.com/kubernetes-release/release/${KUBE_VERSION}/bin/linux/amd64/kube-controller-manager"
+wget -O /tmp/kube-scheduler "https://storage.googleapis.com/kubernetes-release/release/${KUBE_VERSION}/bin/linux/amd64/kube-scheduler"
 
 chmod +x /tmp/{kube-apiserver,kube-controller-manager,kube-scheduler}
 mv /tmp/{kube-apiserver,kube-controller-manager,kube-scheduler} /usr/local/bin/

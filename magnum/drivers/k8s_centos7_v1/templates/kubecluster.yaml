@@ -500,6 +500,11 @@ parameters:
     description: tag of grafana container
     default: 5.1.5
 
+  encryption_key:
+    type: string
+    description: encryption key for encrypt cluster data
+    default: "He+LPNCyzeRFeSPjeuvcf1DhMsNr7dHhf4ILS8/HCSI="
+
 resources:
   network:
     type: ../../common/templates/network.yaml
@@ -685,6 +690,7 @@ resources:
           kube_service_account_private_key: {get_param: kube_service_account_private_key}
           prometheus_tag: {get_param: prometheus_tag}
           grafana_tag: {get_param: grafana_tag}
+          encryption_key: {get_param: encryption_key}
 
   kube_cluster_config:
     type: OS::Heat::SoftwareConfig
