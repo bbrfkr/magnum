@@ -57,7 +57,7 @@ configure_devicemapper () {
 {
   "storage-driver": "devicemapper",
   "storage-opts": [
-    "dm.directlvm_device=${device_path}",
+    "dm.directlvm_device=/dev/vdb",
     "dm.thinp_percent=95",
     "dm.thinp_metapercent=1",
     "dm.thinp_autoextend_threshold=80",
