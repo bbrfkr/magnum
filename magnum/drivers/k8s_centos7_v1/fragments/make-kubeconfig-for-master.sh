@@ -44,7 +44,7 @@ kubectl config set-context default \
   --user=system:kube-scheduler \
   --kubeconfig=${config_dir}/scheduler.kubeconfig
 
-kubectl config use-context default --kubeconfig=${config_dir}/controller-manager.kubeconfig
+kubectl config use-context default --kubeconfig=${config_dir}/scheduler.kubeconfig
 
 # create kubeconfig for admin
 kubectl config set-cluster kubernetes-the-hard-way \
