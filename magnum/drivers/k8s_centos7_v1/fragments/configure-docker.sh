@@ -46,6 +46,7 @@ configure_storage_driver_generic() {
 
     cat <<EOF > /etc/docker/daemon.json
 {
+  "exec-opts": ["native.cgroupdriver=${CGROUP_DRIVER}"],
   "storage-driver": "$1"
 }
 EOF
@@ -55,6 +56,7 @@ EOF
 configure_devicemapper () {
     cat <<EOF > /etc/docker/daemon.json
 {
+  "exec-opts": ["native.cgroupdriver=${CGROUP_DRIVER}"],
   "storage-driver": "devicemapper",
   "storage-opts": [
     "dm.directlvm_device=/dev/vdb",
