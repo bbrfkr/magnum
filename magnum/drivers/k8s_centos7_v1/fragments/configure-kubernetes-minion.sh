@@ -131,6 +131,12 @@ systemctl daemon-reload
 systemctl enable kube-proxy
 systemctl start kube-proxy
 
+until [ "node/${HOSTNAME_OVERRIDE}" = "$(kubectl get node ${HOSTNAME_OVERRIDE} -o name)" ]
+do
+    echo "Waiting for ${HOSTNAME_OVERRIDE} being registerd"
+    sleep 3
+done
+
 if [ "$(echo "${IS_MASTER}" | tr '[:upper:]' '[:lower:]')" = "true" ]; then
   kubectl label nodes ${HOSTNAME_OVERRIDE} node-role.kubernetes.io/master=""
   kubectl taint nodes ${HOSTNAME_OVERRIDE} node-role.kubernetes.io/master=:NoSchedule

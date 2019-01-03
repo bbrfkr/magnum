@@ -565,7 +565,19 @@ resources:
     type: OS::Heat::SoftwareConfig
     properties:
       group: ungrouped
-      config: {get_file: ../fragments/wc-notify.sh}
+      config:
+        str_replace:
+          template: |
+            #!/bin/bash -v
+            if [ "verify_ca" == "True" ]; then
+                VERIFY_CA=""
+            else
+                VERIFY_CA="-k"
+            fi
+            wc_notify $VERIFY_CA --data-binary '{"status": "SUCCESS"}'
+          params:
+            wc_notify: {get_param: wait_curl}
+            verify_ca: {get_param: verify_ca}
 
   kube_master_init:
     type: OS::Heat::MultipartMime
