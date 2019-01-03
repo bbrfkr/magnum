@@ -370,12 +370,6 @@ resources:
       group: ungrouped
       config: {get_file: ../fragments/configure-docker.sh}
 
-  configure_docker_registry:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config: {get_file: ../fragments/configure-docker-registry.sh}
-
   install_kubectl:
     type: OS::Heat::SoftwareConfig
     properties:
@@ -398,19 +392,7 @@ resources:
     type: OS::Heat::SoftwareConfig
     properties:
       group: ungrouped
-      config:
-        str_replace:
-          template: |
-            #!/bin/bash -v
-            if [ "verify_ca" == "True" ]; then
-                VERIFY_CA=""
-            else
-                VERIFY_CA="-k"
-            fi
-            wc_notify $VERIFY_CA --data-binary '{"status": "SUCCESS"}'
-          params:
-            wc_notify: {get_attr: [minion_wait_handle, curl_cli]}
-            verify_ca: {get_param: verify_ca}
+      config: {get_file: ../fragments/wc-notify.sh}
 
   kube_minion_init:
     type: OS::Heat::MultipartMime
@@ -421,7 +403,6 @@ resources:
         - config: {get_resource: disable_selinux}
         - config: {get_resource: make_cert_for_minion}
         - config: {get_resource: configure_docker}
-        - config: {get_resource: configure_docker_registry}
         - config: {get_resource: install_kubectl}
         - config: {get_resource: make_kubeconfig_for_minion}
         - config: {get_resource: configure_kubernetes_minion}

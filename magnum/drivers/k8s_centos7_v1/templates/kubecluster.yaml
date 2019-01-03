@@ -691,6 +691,17 @@ resources:
           prometheus_tag: {get_param: prometheus_tag}
           grafana_tag: {get_param: grafana_tag}
           encryption_key: {get_param: encryption_key}
+          wait_curl: {get_attr: [masters_wait_handle, curl_cli]}
+
+  masters_wait_handle:
+    type: OS::Heat::WaitConditionHandle
+
+  masters_wait_condition:
+    type: OS::Heat::WaitCondition
+    properties:
+      count: {get_param: number_of_masters}
+      handle: {get_resource: masters_wait_handle}
+      timeout: {get_param: wait_condition_timeout}
 
   kube_cluster_config:
     type: OS::Heat::SoftwareConfig

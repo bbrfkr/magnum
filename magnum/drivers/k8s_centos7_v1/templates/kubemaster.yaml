@@ -391,6 +391,10 @@ parameters:
     type: string
     description: encryption key for encrypt cluster data
 
+  wait_curl:
+    type: string
+    description: command to notify for the end of master creation
+
 resources:
   api_address_switch:
     type: Magnum::ApiGatewaySwitcher
@@ -417,6 +421,8 @@ resources:
             "$KUBE_ALLOW_PRIV": {get_param: kube_allow_priv}
             "$ETCD_VOLUME": {get_resource: etcd_volume}
             "$ETCD_VOLUME_SIZE": {get_param: etcd_volume_size}
+            "$DOCKER_VOLUME": {get_resource: docker_volume}
+            "$DOCKER_VOLUME_SIZE": {get_param: docker_volume_size}
             "$DOCKER_STORAGE_DRIVER": {get_param: docker_storage_driver}
             "$CGROUP_DRIVER": {get_param: cgroup_driver}
             "$NETWORK_DRIVER": {get_param: network_driver}
@@ -477,6 +483,7 @@ resources:
             "$PROMETHEUS_TAG": {get_param: prometheus_tag}
             "$GRAFANA_TAG": {get_param: grafana_tag}
             "$ENCRYPTION_KEY": {get_param: encryption_key}
+            "$WAIT_CURL": {get_param: wait_curl}
 
   install_openstack_ca:
     type: OS::Heat::SoftwareConfig
@@ -530,6 +537,36 @@ resources:
       group: ungrouped
       config: {get_file: ../fragments/configure-kubernetes-master.sh}
 
+  make_cert_for_minion:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/make-cert-for-minion.sh}
+
+  configure_docker:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/configure-docker.sh}
+
+  make_kubeconfig_for_minion:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/make-kubeconfig-for-minion.sh}
+      
+  configure_kubernetes_minion:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/configure-kubernetes-minion.sh}
+
+  master_wc_notify:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/wc-notify.sh}
+
   kube_master_init:
     type: OS::Heat::MultipartMime
     properties:
@@ -543,6 +580,11 @@ resources:
         - config: {get_resource: configure_etcd}
         - config: {get_resource: configure_encryption}
         - config: {get_resource: configure_kubernetes_master}
+        - config: {get_resource: make_cert_for_minion}
+        - config: {get_resource: configure_docker}
+        - config: {get_resource: make_kubeconfig_for_minion}
+        - config: {get_resource: configure_kubernetes_minion}
+        - config: {get_resource: master_wc_notify}
 
   kube-master:
     type: OS::Nova::Server
@@ -603,6 +645,19 @@ resources:
     properties:
       instance_uuid: {get_resource: kube-master}
       volume_id: {get_resource: etcd_volume}
+      mountpoint: /dev/vdc
+
+  docker_volume:
+    type: Magnum::Optional::Cinder::Volume
+    properties:
+      size: {get_param: docker_volume_size}
+      volume_type: {get_param: docker_volume_type}
+
+  docker_volume_attach:
+    type: Magnum::Optional::Cinder::VolumeAttachment
+    properties:
+      instance_uuid: {get_resource: kube-master}
+      volume_id: {get_resource: docker_volume}
       mountpoint: /dev/vdb
 
 outputs:
