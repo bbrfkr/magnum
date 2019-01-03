@@ -12,6 +12,9 @@ KUBE_PROTOCOL="https"
 if [ "$TLS_DISABLED" = "True" ]; then
     KUBE_PROTOCOL="http"
 fi
+if [ "$(echo "${IS_MASTER}" | tr '[:upper:]' '[:lower:]')" = "true" ]; then
+    KUBE_MASTER_IP="127.0.0.1"
+fi
 KUBE_MASTER_URI="$KUBE_PROTOCOL://$KUBE_MASTER_IP:$KUBE_API_PORT"
 mkdir -p ${YAML_CONFIG_DIR}
 
@@ -127,3 +130,10 @@ systemctl start kubelet
 systemctl daemon-reload
 systemctl enable kube-proxy
 systemctl start kube-proxy
+
+if [ "$(echo "${IS_MASTER}" | tr '[:upper:]' '[:lower:]')" = "true" ]; then
+  kubectl label nodes ${HOSTNAME_OVERRIDE} node-role.kubernetes.io/master=""
+  kubectl taint nodes ${HOSTNAME_OVERRIDE} node-role.kubernetes.io/master=:NoSchedule
+else
+  kubectl label nodes ${HOSTNAME_OVERRIDE} node-role.kubernetes.io/worker=""
+fi

@@ -15,7 +15,9 @@ if [ "$TLS_DISABLED" = "True" ]; then
     PROTOCOL=http
     KUBE_PROTOCOL="http"
 fi
-
+if [ "$KUBE_MASTER_IP" = "" ]; then
+    KUBE_MASTER_IP="127.0.0.1"
+fi
 KUBE_MASTER_URI="$KUBE_PROTOCOL://$KUBE_MASTER_IP:$KUBE_API_PORT"
 
 # create kubeconfig for kubelet
