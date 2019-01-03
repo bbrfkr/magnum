@@ -15,6 +15,9 @@ fi
 KUBE_MASTER_URI="$KUBE_PROTOCOL://$KUBE_MASTER_IP:$KUBE_API_PORT"
 mkdir -p ${YAML_CONFIG_DIR}
 
+# install os dependency packages
+yum -y install socat conntrack ipset
+
 # install worker component binary
 wget -O /tmp/cni-plugins-amd64-v0.6.0.tgz "https://github.com/containernetworking/plugins/releases/download/v0.6.0/cni-plugins-amd64-v0.6.0.tgz"
 wget -O /tmp/crictl-v1.13.0-linux-amd64.tar.gz "https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.13.0/crictl-v1.13.0-linux-amd64.tar.gz"
@@ -25,8 +28,8 @@ chmod +x /tmp/{kubelet,kube-proxy}
 mv /tmp/{kubelet,kube-proxy} /usr/local/bin/
 mkdir -p /etc/cni/net.d \
          /opt/cni/bin
-tar -xvf crictl-v1.13.0-linux-amd64.tar.gz -C /usr/local/bin/
-tar -xvf cni-plugins-amd64-v0.6.0.tgz -C /opt/cni/bin/
+tar -xvf /tmp/crictl-v1.13.0-linux-amd64.tar.gz -C /usr/local/bin/
+tar -xvf /tmp/cni-plugins-amd64-v0.6.0.tgz -C /opt/cni/bin/
 
 # configure CNI loopback
 cat <<EOF | sudo tee /etc/cni/net.d/99-loopback.conf
