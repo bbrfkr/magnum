@@ -185,10 +185,24 @@ keyUsage=critical,digitalSignature,keyEncipherment
 extendedKeyUsage=clientAuth
 EOF
 
+#front-proxy-client Certs
+cat > ${cert_dir}/front-proxy-client.conf <<EOF
+[req]
+distinguished_name = req_distinguished_name
+req_extensions     = req_ext
+prompt = no
+[req_distinguished_name]
+CN = front-proxy-client
+[req_ext]
+keyUsage=critical,digitalSignature,keyEncipherment
+extendedKeyUsage=clientAuth
+EOF
+
 generate_certificates kubernetes ${cert_dir}/kubernetes.conf
 generate_certificates admin ${cert_dir}/admin.conf
 generate_certificates controller-manager ${cert_dir}/controller-manager.conf
 generate_certificates scheduler ${cert_dir}/scheduler.conf
+generate_certificates front-proxy ${cert_dir}/front-proxy-client.conf
 
 # Generate service account key and private key
 echo -e "${KUBE_SERVICE_ACCOUNT_KEY}" > ${cert_dir}/service_account.key
