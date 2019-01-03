@@ -77,6 +77,7 @@ ExecStart=/usr/local/bin/kubelet \\
   --network-plugin=cni \\
   --register-node=true \\
   --hostname-override=${HOSTNAME_OVERRIDE} \\
+  --read-only-port=10255 \\
   --v=2
 Restart=on-failure
 RestartSec=5
