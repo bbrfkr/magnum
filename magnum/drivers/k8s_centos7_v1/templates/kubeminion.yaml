@@ -329,6 +329,7 @@ resources:
             $PODS_NETWORK_CIDR: {get_param: pods_network_cidr}
             $KUBE_VERSION: {get_param: kube_version}
             $WAIT_CURL: {get_attr: [minion_wait_handle, curl_cli]}
+            $TRUSTEE_DOMAIN_ID: {get_param: trustee_domain_id}
             $TRUSTEE_USER_ID: {get_param: trustee_user_id}
             $TRUSTEE_PASSWORD: {get_param: trustee_password}
             $TRUST_ID: {get_param: trust_id}
@@ -369,6 +370,12 @@ resources:
     properties:
       group: ungrouped
       config: {get_file: ../fragments/configure-docker.sh}
+
+  configure_docker_registry:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/configure-docker-registry.sh}
 
   install_kubectl:
     type: OS::Heat::SoftwareConfig
@@ -415,6 +422,7 @@ resources:
         - config: {get_resource: disable_selinux}
         - config: {get_resource: make_cert_for_minion}
         - config: {get_resource: configure_docker}
+        - config: {get_resource: configure_docker_registry}
         - config: {get_resource: install_kubectl}
         - config: {get_resource: make_kubeconfig_for_minion}
         - config: {get_resource: configure_kubernetes_minion}
