@@ -3,7 +3,7 @@
 . /etc/sysconfig/heat-params
 
 mkdir -p /etc/kubernetes/
-KUBE_OS_CLOUD_CONFIG=/etc/kubernetes/kube_openstack_config
+KUBE_OS_CLOUD_CONFIG=/etc/kubernetes/cloud-config
 cp /etc/pki/tls/certs/ca-bundle.crt /etc/kubernetes/ca-bundle.crt
 
 # Generate a the configuration for Kubernetes services
@@ -13,15 +13,18 @@ cat > $KUBE_OS_CLOUD_CONFIG <<EOF
 auth-url=$AUTH_URL
 user-id=$TRUSTEE_USER_ID
 password=$TRUSTEE_PASSWORD
+domain-id=$TRUSTEE_DOMAIN_ID
 trust-id=$TRUST_ID
 ca-file=/etc/kubernetes/ca-bundle.crt
 [LoadBalancer]
 use-octavia=$OCTAVIA_ENABLED
 subnet-id=$CLUSTER_SUBNET
+floating-network-id=$EXTERNAL_NETWORK
 create-monitor=yes
 monitor-delay=1m
 monitor-timeout=30s
 monitor-max-retries=3
+manage-security-groups=true
 [BlockStorage]
 bs-version=v2
 EOF
