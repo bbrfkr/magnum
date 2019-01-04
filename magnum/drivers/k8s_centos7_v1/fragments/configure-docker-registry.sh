@@ -17,7 +17,7 @@ storage:
   swift:
     authurl: "$AUTH_URL"
     region: "$SWIFT_REGION"
-    username: "$TRUSTEE_USER_ID"
+    username: "$TRUSTEE_USERNAME"
     password: "$TRUSTEE_PASSWORD"
     domainid: "$TRUSTEE_DOMAIN_ID"
     trustid: "$TRUST_ID"
