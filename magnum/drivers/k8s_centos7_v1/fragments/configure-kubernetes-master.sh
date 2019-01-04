@@ -17,6 +17,11 @@ wget -O /tmp/kube-scheduler "https://storage.googleapis.com/kubernetes-release/r
 chmod +x /tmp/{kube-apiserver,kube-controller-manager,kube-scheduler}
 mv /tmp/{kube-apiserver,kube-controller-manager,kube-scheduler} /usr/local/bin/
 
+if [ "$(echo $CLOUD_PROVIDER_ENABLED | tr '[:upper:]' '[:lower:]')" = "true" ]; then
+    CLOUD_CONTROLLER_OPTIONS="--cloud-provider=external"
+    CLOUD_CONTROLLER_OPTIONS_FOR_CM="--cloud-provider=external --external-cloud-volume-plugin"
+fi
+
 # create kube-apiserver config
 INTERNAL_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
 cat <<EOF | sudo tee /etc/systemd/system/kube-apiserver.service
@@ -62,7 +67,7 @@ ExecStart=/usr/local/bin/kube-apiserver \\
   --requestheader-username-headers=X-Remote-User \\
   --proxy-client-cert-file=${CERT_DIR}/front-proxy.crt \\
   --proxy-client-key-file=${CERT_DIR}/front-proxy.key \\
-  --v=2
+  --v=2 ${CLOUD_CONTROLLER_OPTIONS}
 Restart=on-failure
 RestartSec=5
 
@@ -96,7 +101,7 @@ ExecStart=/usr/local/bin/kube-controller-manager \\
   --service-cluster-ip-range=${PORTAL_NETWORK_CIDR} \\
   --use-service-account-credentials=true \\
   --allocate-node-cidrs=true \\
-  --v=2 ${CONTROLLER_MANAGER_SIGNING_OPTIONS}
+  --v=2 ${CONTROLLER_MANAGER_SIGNING_OPTIONS} ${CLOUD_CONTROLLER_OPTIONS_FOR_CM}
 Restart=on-failure
 RestartSec=5
 

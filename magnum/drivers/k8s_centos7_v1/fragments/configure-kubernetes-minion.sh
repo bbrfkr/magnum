@@ -18,6 +18,10 @@ fi
 KUBE_MASTER_URI="$KUBE_PROTOCOL://$KUBE_MASTER_IP:$KUBE_API_PORT"
 mkdir -p ${YAML_CONFIG_DIR}
 
+if [ "$(echo $CLOUD_PROVIDER_ENABLED | tr '[:upper:]' '[:lower:]')" = "true" ]; then
+    CLOUD_CONTROLLER_OPTIONS="--cloud-provider=external"
+fi
+
 # install os dependency packages
 yum -y install socat conntrack ipset
 
@@ -81,7 +85,7 @@ ExecStart=/usr/local/bin/kubelet \\
   --register-node=true \\
   --hostname-override=${HOSTNAME_OVERRIDE} \\
   --read-only-port=10255 \\
-  --v=2
+  --v=2 ${CLOUD_CONTROLLER_OPTIONS}
 Restart=on-failure
 RestartSec=5
 
