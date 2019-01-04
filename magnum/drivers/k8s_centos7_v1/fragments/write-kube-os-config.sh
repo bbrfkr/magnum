@@ -13,7 +13,6 @@ cat > $KUBE_OS_CLOUD_CONFIG <<EOF
 auth-url=$AUTH_URL
 user-id=$TRUSTEE_USER_ID
 password=$TRUSTEE_PASSWORD
-domain-id=$TRUSTEE_DOMAIN_ID
 trust-id=$TRUST_ID
 ca-file=/etc/kubernetes/ca-bundle.crt
 [LoadBalancer]
