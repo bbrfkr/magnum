@@ -206,6 +206,11 @@ spec:
       labels:
         app: csi-attacher-cinderplugin
     spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
       serviceAccount: csi-attacher
       containers:
         - name: csi-attacher
@@ -377,6 +382,11 @@ spec:
       labels:
         app: csi-provisioner-cinderplugin
     spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
       serviceAccount: csi-provisioner
       containers:
         - name: csi-provisioner

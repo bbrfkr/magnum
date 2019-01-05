@@ -25,7 +25,7 @@ monitor-timeout=30s
 monitor-max-retries=3
 manage-security-groups=true
 [BlockStorage]
-bs-version=v2
+bs-version=auto
 EOF
 
 # Provide optional region parameter if it's set.
