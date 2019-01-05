@@ -116,16 +116,11 @@ spec:
 EOF
 
 CONFIG_DIR=/etc/kubernetes
-
-mkdir -p /tmp/csi-cinder-plugin
-cd /tmp/csi-cinder-plugin
-wget "https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/release-1.13/manifests/cinder-csi-plugin/csi-attacher-cinderplugin.yaml"
-wget "https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/release-1.13/manifests/cinder-csi-plugin/csi-nodeplugin-cinderplugin.yaml"
-wget "https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/release-1.13/manifests/cinder-csi-plugin/csi-provisioner-cinderplugin.yaml"
-wget "https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/release-1.13/manifests/cinder-csi-plugin/csi-secret-cinderplugin.yaml"
-
 CLOUD_CONFIG=$(base64 -w 0 ${CONFIG_DIR}/cloud-config)
-sed -i "s/cloud.conf: .*/cloud.conf: ${CLOUD_CONFIG}/g" csi-secret-cinderplugin.yaml
+wget -O /tmp/csi-secret-cinderplugin.yaml "https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/release-1.13/manifests/cinder-csi-plugin/csi-secret-cinderplugin.yaml"
+sed -i "s/cloud.conf: .*/cloud.conf: ${CLOUD_CONFIG}/g" /tmp/csi-secret-cinderplugin.yaml
+
+kubectl apply -f /tmp/csi-secret-cinderplugin.yaml -n kube-system
 
 cat <<EOF | kubectl apply -n kube-system -f -
 ---
@@ -182,15 +177,251 @@ roleRef:
   kind: ClusterRole
   name: cluster-admin
   apiGroup: rbac.authorization.k8s.io
-EOF
-
-kubectl apply -f . -n kube-system
-
-cat <<EOF | kubectl apply -n kube-system -f -
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: csi-attacher-cinderplugin
+  labels:
+    app: csi-attacher-cinderplugin
+spec:
+  selector:
+    app: csi-attacher-cinderplugin
+  ports:
+    - name: dummy
+      port: 12345
+---
+kind: StatefulSet
+apiVersion: apps/v1beta1
+metadata:
+  name: csi-attacher-cinderplugin
+spec:
+  serviceName: "csi-attacher-cinderplugin"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: csi-attacher-cinderplugin
+    spec:
+      serviceAccount: csi-attacher
+      containers:
+        - name: csi-attacher
+          image: quay.io/k8scsi/csi-attacher:v0.4.1
+          args:
+            - "--v=5"
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+        - name: cinder
+          image: docker.io/bbrfkr0129/cinder-csi-plugin:1.13.1
+          args :
+            - /bin/cinder-csi-plugin
+            - "--nodeid=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--cloud-config=$(CLOUD_CONFIG)"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://csi/csi.sock
+            - name: CLOUD_CONFIG
+              value: /etc/config/cloud.conf
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+            - name: secret-cinderplugin
+              mountPath: /etc/config
+              readOnly: true
+      volumes:
+        - name: socket-dir
+          emptyDir:
+        - name: secret-cinderplugin
+          secret:
+            secretName: csi-secret-cinderplugin
+---
+kind: DaemonSet
+apiVersion: apps/v1beta2
+metadata:
+  name: csi-nodeplugin-cinderplugin
+spec:
+  selector:
+    matchLabels:
+      app: csi-nodeplugin-cinderplugin
+  template:
+    metadata:
+      labels:
+        app: csi-nodeplugin-cinderplugin
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      serviceAccount: csi-nodeplugin
+      hostNetwork: true
+      containers:
+        - name: driver-registrar
+          image: quay.io/k8scsi/driver-registrar:v0.4.1
+          args:
+            - "--v=5"
+            - "--csi-address=$(ADDRESS)"
+            - "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"
+          env:
+            - name: ADDRESS
+              value: /csi/csi.sock
+            - name: DRIVER_REG_SOCK_PATH
+              value: /var/lib/kubelet/plugins/csi-cinderplugin/csi.sock
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+            - name: registration-dir
+              mountPath: /registration
+        - name: cinder
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["SYS_ADMIN"]
+            allowPrivilegeEscalation: true
+          image: docker.io/bbrfkr0129/cinder-csi-plugin:1.13.1
+          args :
+            - /bin/cinder-csi-plugin
+            - "--nodeid=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--cloud-config=$(CLOUD_CONFIG)"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://csi/csi.sock
+            - name: CLOUD_CONFIG
+              value: /etc/config/cloud.conf
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+            - name: pods-mount-dir
+              mountPath: /var/lib/kubelet/pods
+              mountPropagation: "Bidirectional"
+            - name: pods-cloud-data
+              mountPath: /var/lib/cloud/data
+              readOnly: true
+            - name: pods-probe-dir
+              mountPath: /dev
+              mountPropagation: "HostToContainer"
+            - name: secret-cinderplugin
+              mountPath: /etc/config
+              readOnly: true
+      volumes:
+        - name: socket-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/csi-cinderplugin
+            type: DirectoryOrCreate
+        - name: registration-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/
+            type: Directory
+        - name: pods-mount-dir
+          hostPath:
+            path: /var/lib/kubelet/pods
+            type: Directory
+        - name: pods-cloud-data
+          hostPath:
+            path: /var/lib/cloud/data
+            type: Directory
+        - name: pods-probe-dir
+          hostPath:
+            path: /dev
+            type: Directory
+        - name: secret-cinderplugin
+          secret:
+            secretName: csi-secret-cinderplugin
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: csi-provisioner-cinderplugin
+  labels:
+    app: csi-provisioner-cinderplugin
+spec:
+  selector:
+    app: csi-provisioner-cinderplugin
+  ports:
+    - name: dummy
+      port: 12345
+---
+kind: StatefulSet
+apiVersion: apps/v1beta1
+metadata:
+  name: csi-provisioner-cinderplugin
+spec:
+  serviceName: "csi-provisioner-cinderplugin"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: csi-provisioner-cinderplugin
+    spec:
+      serviceAccount: csi-provisioner
+      containers:
+        - name: csi-provisioner
+          image: quay.io/k8scsi/csi-provisioner:v0.4.1
+          args:
+            - "--provisioner=csi-cinderplugin"
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+        - name: cinder
+          image: docker.io/bbrfkr0129/cinder-csi-plugin:1.13.1
+          args :
+            - /bin/cinder-csi-plugin
+            - "--nodeid=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--cloud-config=$(CLOUD_CONFIG)"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://csi/csi.sock
+            - name: CLOUD_CONFIG
+              value: /etc/config/cloud.conf
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+            - name: secret-cinderplugin
+              mountPath: /etc/config
+              readOnly: true
+      volumes:
+        - name: socket-dir
+          emptyDir:
+        - name: secret-cinderplugin
+          secret:
+            secretName: csi-secret-cinderplugin
+---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: csi-cinderplugin
+  name: csi-cinder
   annotations:
     storageclass.beta.kubernetes.io/is-default-class: "true"
 provisioner: csi-cinderplugin
