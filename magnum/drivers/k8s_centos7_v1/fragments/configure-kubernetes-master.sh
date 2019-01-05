@@ -18,7 +18,8 @@ chmod +x /tmp/{kube-apiserver,kube-controller-manager,kube-scheduler}
 mv /tmp/{kube-apiserver,kube-controller-manager,kube-scheduler} /usr/local/bin/
 
 if [ "$(echo $CLOUD_PROVIDER_ENABLED | tr '[:upper:]' '[:lower:]')" = "true" ]; then
-  CLOUD_CONTROLLER_OPTIONS="--cloud-provider=external --feature-gates=CSIPersistentVolume=true --feature-gates=MountPropagation=true --runtime-config=storage.k8s.io/v1alpha1=true"
+  CLOUD_CONTROLLER_OPTIONS="--cloud-provider=external"
+  CLOUD_CONTROLLER_OPTIONS_FOR_API="--cloud-provider=external --feature-gates=CSIPersistentVolume=true --feature-gates=MountPropagation=true --runtime-config=storage.k8s.io/v1alpha1=true"
 fi
 
 # create kube-apiserver config
@@ -66,7 +67,7 @@ ExecStart=/usr/local/bin/kube-apiserver \\
   --requestheader-username-headers=X-Remote-User \\
   --proxy-client-cert-file=${CERT_DIR}/front-proxy.crt \\
   --proxy-client-key-file=${CERT_DIR}/front-proxy.key \\
-  --v=2 ${CLOUD_CONTROLLER_OPTIONS}
+  --v=2 ${CLOUD_CONTROLLER_OPTIONS_FOR_API}
 Restart=on-failure
 RestartSec=5
 
