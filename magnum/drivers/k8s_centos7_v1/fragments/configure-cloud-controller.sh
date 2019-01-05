@@ -122,7 +122,10 @@ sed -i "s/cloud.conf: .*/cloud.conf: ${CLOUD_CONFIG}/g" /tmp/csi-secret-cinderpl
 
 kubectl apply -f /tmp/csi-secret-cinderplugin.yaml -n kube-system
 
-cat <<EOF | kubectl apply -n kube-system -f -
+add_parenthesis () {
+  echo -n \$\($1\)
+}
+cat <<EOF > /tmp/csi-cinderplugin.yaml
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -209,7 +212,7 @@ spec:
           image: quay.io/k8scsi/csi-attacher:v0.4.1
           args:
             - "--v=5"
-            - "--csi-address=$(ADDRESS)"
+            - "--csi-address=$(add_parenthesis ADDRESS)"
           env:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -221,9 +224,9 @@ spec:
           image: docker.io/bbrfkr0129/cinder-csi-plugin:1.13.1
           args :
             - /bin/cinder-csi-plugin
-            - "--nodeid=$(NODE_ID)"
-            - "--endpoint=$(CSI_ENDPOINT)"
-            - "--cloud-config=$(CLOUD_CONFIG)"
+            - "--nodeid=$(add_parenthesis NODE_ID)"
+            - "--endpoint=$(add_parenthesis CSI_ENDPOINT)"
+            - "--cloud-config=$(add_parenthesis CLOUD_CONFIG)"
           env:
             - name: NODE_ID
               valueFrom:
@@ -270,8 +273,8 @@ spec:
           image: quay.io/k8scsi/driver-registrar:v0.4.1
           args:
             - "--v=5"
-            - "--csi-address=$(ADDRESS)"
-            - "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"
+            - "--csi-address=$(add_parenthesis ADDRESS)"
+            - "--kubelet-registration-path=$(add_parenthesis DRIVER_REG_SOCK_PATH)"
           env:
             - name: ADDRESS
               value: /csi/csi.sock
@@ -296,9 +299,9 @@ spec:
           image: docker.io/bbrfkr0129/cinder-csi-plugin:1.13.1
           args :
             - /bin/cinder-csi-plugin
-            - "--nodeid=$(NODE_ID)"
-            - "--endpoint=$(CSI_ENDPOINT)"
-            - "--cloud-config=$(CLOUD_CONFIG)"
+            - "--nodeid=$(add_parenthesis NODE_ID)"
+            - "--endpoint=$(add_parenthesis CSI_ENDPOINT)"
+            - "--cloud-config=$(add_parenthesis CLOUD_CONFIG)"
           env:
             - name: NODE_ID
               valueFrom:
@@ -380,7 +383,7 @@ spec:
           image: quay.io/k8scsi/csi-provisioner:v0.4.1
           args:
             - "--provisioner=csi-cinderplugin"
-            - "--csi-address=$(ADDRESS)"
+            - "--csi-address=$(add_parenthesis ADDRESS)"
           env:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -392,9 +395,9 @@ spec:
           image: docker.io/bbrfkr0129/cinder-csi-plugin:1.13.1
           args :
             - /bin/cinder-csi-plugin
-            - "--nodeid=$(NODE_ID)"
-            - "--endpoint=$(CSI_ENDPOINT)"
-            - "--cloud-config=$(CLOUD_CONFIG)"
+            - "--nodeid=$(add_parenthesis NODE_ID)"
+            - "--endpoint=$(add_parenthesis CSI_ENDPOINT)"
+            - "--cloud-config=$(add_parenthesis CLOUD_CONFIG)"
           env:
             - name: NODE_ID
               valueFrom:
@@ -426,3 +429,5 @@ metadata:
     storageclass.beta.kubernetes.io/is-default-class: "true"
 provisioner: csi-cinderplugin
 EOF
+
+kubectl apply -f /tmp/csi-cinderplugin.yaml -n kube-system
