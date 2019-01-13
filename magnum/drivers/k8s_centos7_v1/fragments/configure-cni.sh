@@ -15,9 +15,10 @@ if [ "$NETWORK_DRIVER" = "flannel" ]; then
 fi
 
 if [ "$NETWORK_DRIVER" = "calico" ]; then
-  wget -O /tmp/rbac-kdd.yaml https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml
-  wget -O /tmp/calico.yaml https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml
-  sed -i "s@192.168.0.0/16@${PODS_NETWORK_CIDR}@g" /tmp/calico.yml
-  kubectl apply -f /tmp/rbac-kdd.yaml 
+  #wget -O /tmp/rbac-kdd.yaml https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml
+  #wget -O /tmp/calico.yaml https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml
+  wget -O /tmp/calico.yaml https://docs.projectcalico.org/v1.6/getting-started/kubernetes/installation/hosted/calico.yaml
+  #sed -i "s@192.168.0.0/16@${PODS_NETWORK_CIDR}@g" /tmp/calico.yml
+  #kubectl apply -f /tmp/rbac-kdd.yaml 
   kubectl apply -f /tmp/calico.yaml 
 fi
