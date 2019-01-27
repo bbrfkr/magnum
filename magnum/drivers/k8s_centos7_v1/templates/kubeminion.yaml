@@ -395,7 +395,13 @@ resources:
     properties:
       group: ungrouped
       config: {get_file: ../fragments/configure-kubernetes-minion.sh}
-      
+
+  configure_kernel_params:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/configure-kernel-params.sh}
+
   minion_wc_notify:
     type: OS::Heat::SoftwareConfig
     properties:
@@ -427,6 +433,7 @@ resources:
         - config: {get_resource: install_kubectl}
         - config: {get_resource: make_kubeconfig_for_minion}
         - config: {get_resource: configure_kubernetes_minion}
+        - config: {get_resource: configure_kernel_params}
         - config: {get_resource: minion_wc_notify}
   kube-minion:
     type: OS::Nova::Server
