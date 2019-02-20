@@ -8,7 +8,7 @@ class Driver(driver.HeatDriver):
     def provides(self):
         return [
             {'server_type': 'vm',
-             'os': 'centos7',
+             'os': 'centos7_v1',
              'coe': 'kubernetes'},
         ]
 
