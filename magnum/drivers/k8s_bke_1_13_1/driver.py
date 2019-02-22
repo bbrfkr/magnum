@@ -1,5 +1,5 @@
 from magnum.drivers.heat import driver
-from magnum.drivers.k8s_centos7_v2 import template_def
+from magnum.drivers.k8s_bke_1_13_1 import template_def
 
 
 class Driver(driver.HeatDriver):
@@ -8,7 +8,7 @@ class Driver(driver.HeatDriver):
     def provides(self):
         return [
             {'server_type': 'vm',
-             'os': 'centos7_v2',
+             'os': 'bke-1.13.1',
              'coe': 'kubernetes'},
         ]
 
