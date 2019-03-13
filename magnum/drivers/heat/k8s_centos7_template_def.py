@@ -137,6 +137,10 @@ class K8sCentos7TemplateDefinition(k8s_template_def.K8sTemplateDefinition):
         if dns_cluster_domain:
             extra_params['dns_cluster_domain'] = dns_cluster_domain
 
+        dns_service_ip = cluster.labels.get('dns_service_ip')
+        if dns_cluster_domain:
+            extra_params['dns_service_ip'] = dns_service_ip
+
         return super(K8sCentos7TemplateDefinition,
                      self).get_params(context, cluster_template, cluster,
                                       extra_params=extra_params,
