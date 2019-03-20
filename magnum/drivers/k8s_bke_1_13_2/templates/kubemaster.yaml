@@ -177,10 +177,6 @@ parameters:
     type: string
     description: network driver to use for instantiating container networks
 
-  secgroup_kube_master_id:
-    type: string
-    description: ID of the security group for kubernetes master.
-
   api_pool_id:
     type: string
     description: ID of the load balancer pool of k8s API server.
@@ -637,12 +633,9 @@ resources:
     type: OS::Neutron::Port
     properties:
       network: {get_param: fixed_network}
-      security_groups:
-        - {get_param: secgroup_kube_master_id}
       fixed_ips:
         - subnet: {get_param: fixed_subnet}
-      allowed_address_pairs:
-        - ip_address: {get_param: pods_network_cidr}
+      port_security_enabled: false
       replacement_policy: AUTO
 
   kube_master_floating:
