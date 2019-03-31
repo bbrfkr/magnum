@@ -214,7 +214,7 @@ spec:
       serviceAccount: csi-attacher
       containers:
         - name: csi-attacher
-          image: quay.io/k8scsi/csi-attacher:v1.0.1
+          image: quay.io/k8scsi/csi-attacher:v0.4.1
           args:
             - "--v=5"
             - "--csi-address=$(add_parenthesis ADDRESS)"
@@ -226,7 +226,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: cinder
-          image: docker.io/k8scloudprovider/cinder-csi-plugin:v1.14.0
+          image: docker.io/k8scloudprovider/cinder-csi-plugin:1.13.1
           args :
             - /bin/cinder-csi-plugin
             - "--nodeid=$(add_parenthesis NODE_ID)"
@@ -275,7 +275,7 @@ spec:
       hostNetwork: true
       containers:
         - name: driver-registrar
-          image: quay.io/k8scsi/driver-registrar:v1.0.1
+          image: quay.io/k8scsi/csi-node-driver-registrar:v0.4.1
           args:
             - "--v=5"
             - "--csi-address=$(add_parenthesis ADDRESS)"
@@ -301,7 +301,7 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
             allowPrivilegeEscalation: true
-          image: docker.io/k8scloudprovider/cinder-csi-plugin:v1.14.0
+          image: docker.io/k8scloudprovider/cinder-csi-plugin:1.13.1
           args :
             - /bin/cinder-csi-plugin
             - "--nodeid=$(add_parenthesis NODE_ID)"
@@ -390,7 +390,7 @@ spec:
       serviceAccount: csi-provisioner
       containers:
         - name: csi-provisioner
-          image: quay.io/k8scsi/csi-provisioner:v1.0.1
+          image: quay.io/k8scsi/csi-provisioner:v0.4.1
           args:
             - "--provisioner=csi-cinderplugin"
             - "--csi-address=$(add_parenthesis ADDRESS)"
@@ -402,7 +402,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: cinder
-          image: docker.io/k8scloudprovider/cinder-csi-plugin:v1.14.0
+          image: docker.io/k8scloudprovider/cinder-csi-plugin:1.13.1
           args :
             - /bin/cinder-csi-plugin
             - "--nodeid=$(add_parenthesis NODE_ID)"
