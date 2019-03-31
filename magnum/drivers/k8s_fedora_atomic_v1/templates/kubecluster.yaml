@@ -1,12 +1,8 @@
-heat_template_version: 2014-10-16
+heat_template_version: "2018-08-31"
 
-description: >
-  This template will boot a Kubernetes cluster with one or more
-  minions (as specified by the number_of_minions parameter, which
-  defaults to 1).
+description: "Kubernetes Cluster from Magnum"
 
 parameters:
-
   ssh_key_name:
     type: string
     description: name of ssh key to be provisioned on our server
@@ -325,12 +321,12 @@ parameters:
   kube_tag:
     type: string
     description: tag of the k8s containers used to provision the kubernetes cluster
-    default: v1.11.1
+    default: v1.14.0
 
   etcd_tag:
     type: string
     description: tag of the etcd system container
-    default: v3.2.7
+    default: v3.3.9
 
   flannel_tag:
     type: string
@@ -340,7 +336,7 @@ parameters:
   kube_version:
     type: string
     description: version of kubernetes used for kubernetes cluster
-    default: v1.11.1
+    default: v1.14.0
 
   kube_dashboard_version:
     type: string
@@ -504,16 +500,12 @@ parameters:
     description: tag of grafana container
     default: 5.1.5
 
+  encryption_key:
+    type: string
+    description: encryption key for encrypt cluster data
+    default: "He+LPNCyzeRFeSPjeuvcf1DhMsNr7dHhf4ILS8/HCSI="
+
 resources:
-
-  ######################################################################
-  #
-  # network resources.  allocate a network and router for our server.
-  # Important: the Load Balancer feature in Kubernetes requires that
-  # the name for the fixed_network must be "private" for the
-  # address lookup in Kubernetes to work properly
-  #
-
   network:
     type: ../../common/templates/network.yaml
     properties:
@@ -539,12 +531,6 @@ resources:
       external_network: {get_param: external_network}
       protocol: {get_param: loadbalancing_protocol}
       port: 2379
-
-  ######################################################################
-  #
-  # security groups.  we need to permit network traffic of various
-  # sorts.
-  #
 
   secgroup_kube_master:
     type: OS::Neutron::SecurityGroup
@@ -587,12 +573,6 @@ resources:
         - protocol: tcp
         - protocol: udp
 
-  ######################################################################
-  #
-  # resources that expose the IPs of either the kube master or a given
-  # LBaaS pool depending on whether LBaaS is enabled for the cluster.
-  #
-
   api_address_lb_switch:
     type: Magnum::ApiGatewaySwitcher
     properties:
@@ -607,34 +587,16 @@ resources:
       pool_private_ip: {get_attr: [etcd_lb, address]}
       master_private_ip: {get_attr: [kube_masters, resource.0.kube_master_ip]}
 
-  ######################################################################
-  #
-  # resources that expose the IPs of either floating ip or a given
-  # fixed ip depending on whether FloatingIP is enabled for the cluster.
-  #
-
   api_address_floating_switch:
     type: Magnum::FloatingIPAddressSwitcher
     properties:
       public_ip: {get_attr: [api_address_lb_switch, public_ip]}
       private_ip: {get_attr: [api_address_lb_switch, private_ip]}
 
-  ######################################################################
-  #
-  # resources that expose the server group for all nodes include master
-  # and minions.
-  #
-
   nodes_server_group:
     type: OS::Nova::ServerGroup
     properties:
       policies: [{get_param: nodes_affinity_policy}]
-
-  ######################################################################
-  #
-  # kubernetes masters. This is a resource group that will create
-  # <number_of_masters> masters.
-  #
 
   kube_masters:
     type: OS::Heat::ResourceGroup
@@ -696,6 +658,7 @@ resources:
           etcd_tag: {get_param: etcd_tag}
           flannel_tag: {get_param: flannel_tag}
           kube_dashboard_version: {get_param: kube_dashboard_version}
+          trustee_domain_id: {get_param: trustee_domain_id}
           trustee_user_id: {get_param: trustee_user_id}
           trustee_password: {get_param: trustee_password}
           trust_id: {get_param: trust_id}
@@ -728,6 +691,18 @@ resources:
           kube_service_account_private_key: {get_param: kube_service_account_private_key}
           prometheus_tag: {get_param: prometheus_tag}
           grafana_tag: {get_param: grafana_tag}
+          encryption_key: {get_param: encryption_key}
+          wait_curl: {get_attr: [masters_wait_handle, curl_cli]}
+
+  masters_wait_handle:
+    type: OS::Heat::WaitConditionHandle
+
+  masters_wait_condition:
+    type: OS::Heat::WaitCondition
+    properties:
+      count: {get_param: number_of_masters}
+      handle: {get_resource: masters_wait_handle}
+      timeout: {get_param: wait_condition_timeout}
 
   kube_cluster_config:
     type: OS::Heat::SoftwareConfig
@@ -737,22 +712,10 @@ resources:
         list_join:
           - "\n"
           -
-            - get_file: ../../common/templates/kubernetes/fragments/kube-apiserver-to-kubelet-role.sh
-            - str_replace:
-                template: {get_file: ../../common/templates/kubernetes/fragments/enable-cert-api-manager.sh}
-                params:
-                  "$CA_KEY": {get_param: ca_key}
-            - get_file: ../../common/templates/kubernetes/fragments/core-dns-service.sh
-            - str_replace:
-                template: {get_file: ../../common/templates/kubernetes/fragments/enable-prometheus-monitoring.sh}
-                params:
-                  "$ADMIN_PASSWD": {get_param: grafana_admin_passwd}
-            - get_file: ../../common/templates/kubernetes/fragments/calico-service.sh
-            - str_replace:
-                params:
-                  $enable-ingress-traefik: {get_file: ../../common/templates/kubernetes/fragments/enable-ingress-traefik.sh}
-                template: {get_file: ../../common/templates/kubernetes/fragments/enable-ingress-controller.sh}
-            - get_file: ../../common/templates/kubernetes/fragments/kube-dashboard-service.sh
+            - get_file: ../fragments/kube-apiserver-to-kubelet-role.sh
+            - get_file: ../fragments/configure-cni.sh
+            - get_file: ../fragments/configure-coredns.sh
+            - get_file: ../fragments/configure-cloud-controller.sh
 
   kube_cluster_deploy:
     type: OS::Heat::SoftwareDeployment
@@ -764,17 +727,11 @@ resources:
       server:
         get_attr: [kube_masters, resource.0]
 
-
-  ######################################################################
-  #
-  # kubernetes minions. This is an resource group that will initially
-  # create <number_of_minions> minions, and needs to be manually scaled.
-  #
-
   kube_minions:
     type: OS::Heat::ResourceGroup
     depends_on:
       - network
+      - kube_masters
     properties:
       count: {get_param: number_of_minions}
       removal_policies: [{resource_list: {get_param: minions_to_remove}}]
@@ -825,10 +782,10 @@ resources:
           kube_tag: {get_param: kube_tag}
           kube_version: {get_param: kube_version}
           flannel_tag: {get_param: flannel_tag}
+          trustee_domain_id: {get_param: trustee_domain_id}
           trustee_user_id: {get_param: trustee_user_id}
           trustee_username: {get_param: trustee_username}
           trustee_password: {get_param: trustee_password}
-          trustee_domain_id: {get_param: trustee_domain_id}
           trust_id: {get_param: trust_id}
           cloud_provider_enabled: {get_param: cloud_provider_enabled}
           insecure_registry_url: {get_param: insecure_registry_url}
@@ -844,7 +801,6 @@ resources:
           octavia_enabled: {get_param: octavia_enabled}
 
 outputs:
-
   api_address:
     value:
       str_replace:

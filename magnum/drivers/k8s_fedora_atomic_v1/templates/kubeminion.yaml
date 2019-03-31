@@ -1,4 +1,4 @@
-heat_template_version: 2014-10-16
+heat_template_version: "2018-08-31"
 
 description: >
   This is a nested stack that defines a single Kubernetes minion, This stack is
@@ -6,7 +6,6 @@ description: >
   (kubecluster.yaml).
 
 parameters:
-
   name:
     type: string
     description: server name
@@ -277,7 +276,6 @@ parameters:
     description: Enable or disable the openstack kubernetes cloud provider
 
 resources:
-
   minion_wait_handle:
     type: OS::Heat::WaitConditionHandle
 
@@ -288,19 +286,13 @@ resources:
       handle: {get_resource: minion_wait_handle}
       timeout: {get_param: wait_condition_timeout}
 
-  ######################################################################
-  #
-  # software configs.  these are components that are combined into
-  # a multipart MIME user-data archive.
-  #
-
   write_heat_params:
     type: OS::Heat::SoftwareConfig
     properties:
       group: ungrouped
       config:
         str_replace:
-          template: {get_file: ../../common/templates/kubernetes/fragments/write-heat-params.yaml}
+          template: {get_file: ../fragments/write-heat-params.yaml}
           params:
             $PROMETHEUS_MONITORING: {get_param: prometheus_monitoring}
             $KUBE_ALLOW_PRIV: {get_param: kube_allow_priv}
@@ -337,7 +329,9 @@ resources:
             $PODS_NETWORK_CIDR: {get_param: pods_network_cidr}
             $KUBE_VERSION: {get_param: kube_version}
             $WAIT_CURL: {get_attr: [minion_wait_handle, curl_cli]}
+            $TRUSTEE_DOMAIN_ID: {get_param: trustee_domain_id}
             $TRUSTEE_USER_ID: {get_param: trustee_user_id}
+            $TRUSTEE_USERNAME: {get_param: trustee_username}
             $TRUSTEE_PASSWORD: {get_param: trustee_password}
             $TRUST_ID: {get_param: trust_id}
             $AUTH_URL: {get_param: auth_url}
@@ -358,65 +352,55 @@ resources:
         str_replace:
           params:
             $OPENSTACK_CA: {get_param: openstack_ca}
-          template: {get_file: ../../common/templates/fragments/atomic-install-openstack-ca.sh}
+          template: {get_file: ../fragments/install-openstack-ca.sh}
 
-  write_kube_os_config:
+  disable_selinux:
     type: OS::Heat::SoftwareConfig
     properties:
       group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/write-kube-os-config.sh}
+      config: {get_file: ../fragments/disable-selinux.sh}
 
-  make_cert:
+  make_cert_for_minion:
     type: OS::Heat::SoftwareConfig
     properties:
       group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/make-cert-client.sh}
+      config: {get_file: ../fragments/make-cert-for-minion.sh}
 
-  configure_docker_storage:
+  configure_docker:
     type: OS::Heat::SoftwareConfig
     properties:
       group: ungrouped
-      config:
-        str_replace:
-          params:
-            $configure_docker_storage_driver: {get_file: ../../common/templates/fragments/configure_docker_storage_driver_atomic.sh}
-          template: {get_file: ../../common/templates/fragments/configure-docker-storage.sh}
+      config: {get_file: ../fragments/configure-docker.sh}
 
   configure_docker_registry:
     type: OS::Heat::SoftwareConfig
     properties:
       group: ungrouped
-      config: {get_file: ../../common/templates/fragments/configure-docker-registry.sh}
+      config: {get_file: ../fragments/configure-docker-registry.sh}
 
+  install_kubectl:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/install-kubectl.sh}
+
+  make_kubeconfig_for_minion:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/make-kubeconfig-for-minion.sh}
+      
   configure_kubernetes_minion:
     type: OS::Heat::SoftwareConfig
     properties:
       group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/configure-kubernetes-minion.sh}
+      config: {get_file: ../fragments/configure-kubernetes-minion.sh}
 
-  flannel_service:
+  configure_kernel_params:
     type: OS::Heat::SoftwareConfig
     properties:
       group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/flannel-service.sh}
-
-  enable_services:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/enable-services-minion.sh}
-
-  enable_docker_registry:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config: {get_file: ../../common/templates/fragments/enable-docker-registry.sh}
-
-  enable_node_exporter:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/enable-node-exporter.sh}
+      config: {get_file: ../fragments/configure-kernel-params.sh}
 
   minion_wc_notify:
     type: OS::Heat::SoftwareConfig
@@ -436,45 +420,21 @@ resources:
             wc_notify: {get_attr: [minion_wait_handle, curl_cli]}
             verify_ca: {get_param: verify_ca}
 
-  disable_selinux:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/disable-selinux.sh}
-
-  add_proxy:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/add-proxy.sh}
-
   kube_minion_init:
     type: OS::Heat::MultipartMime
     properties:
       parts:
+        - config: {get_resource: write_heat_params}
         - config: {get_resource: install_openstack_ca}
         - config: {get_resource: disable_selinux}
-        - config: {get_resource: write_heat_params}
-        - config: {get_resource: write_kube_os_config}
-        - config: {get_resource: make_cert}
-        - config: {get_resource: configure_docker_storage}
+        - config: {get_resource: make_cert_for_minion}
+        - config: {get_resource: configure_docker}
         - config: {get_resource: configure_docker_registry}
+        - config: {get_resource: install_kubectl}
+        - config: {get_resource: make_kubeconfig_for_minion}
         - config: {get_resource: configure_kubernetes_minion}
-        - config: {get_resource: flannel_service}
-        - config: {get_resource: add_proxy}
-        - config: {get_resource: enable_services}
-        - config: {get_resource: enable_node_exporter}
-        - config: {get_resource: enable_docker_registry}
+        - config: {get_resource: configure_kernel_params}
         - config: {get_resource: minion_wc_notify}
-
-  ######################################################################
-  #
-  # a single kubernetes minion.
-  #
-
-  # do NOT use "_" (underscore) in the Nova server name
-  # it creates a mismatch between the generated Nova name and its hostname
-  # which can lead to weird problems
   kube-minion:
     type: OS::Nova::Server
     properties:
@@ -507,12 +467,6 @@ resources:
       floating_network: {get_param: external_network}
       port_id: {get_resource: kube_minion_eth0}
 
-  ######################################################################
-  #
-  # docker storage.  This allocates a cinder volume and attaches it
-  # to the minion.
-  #
-
   docker_volume:
     type: Magnum::Optional::Cinder::Volume
     properties:
@@ -527,7 +481,6 @@ resources:
       mountpoint: /dev/vdb
 
 outputs:
-
   kube_minion_ip:
     value: {get_attr: [kube_minion_eth0, fixed_ips, 0, ip_address]}
     description: >

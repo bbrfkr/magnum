@@ -141,6 +141,10 @@ parameters:
     description: >
       size fo the data segments for the swift dynamic large objects
 
+  secgroup_kube_minion_id:
+    type: string
+    description: ID of the security group for kubernetes minion.
+
   volume_driver:
     type: string
     description: volume driver to use for container storage
@@ -449,9 +453,12 @@ resources:
     type: OS::Neutron::Port
     properties:
       network: {get_param: fixed_network}
+      security_groups:
+        - get_param: secgroup_kube_minion_id
       fixed_ips:
         - subnet: {get_param: fixed_subnet}
-      port_security_enabled: false
+      allowed_address_pairs:
+        - ip_address: {get_param: pods_network_cidr}
       replacement_policy: AUTO
 
   kube_minion_floating:

@@ -1,4 +1,4 @@
-heat_template_version: 2014-10-16
+heat_template_version: "2018-08-31"
 
 description: >
   This is a nested stack that defines a single Kubernetes master, This stack is
@@ -6,7 +6,6 @@ description: >
   (kubecluster.yaml).
 
 parameters:
-
   name:
     type: string
     description: server name
@@ -237,6 +236,10 @@ parameters:
     type: string
     description: version of kubernetes dashboard used for kubernetes cluster
 
+  trustee_domain_id:
+    type: string
+    description: domain id of the trustee
+
   trustee_user_id:
     type: string
     description: user id of the trustee
@@ -388,13 +391,15 @@ parameters:
     type: string
     description: tag of grafana container
 
-resources:
-  ######################################################################
-  #
-  # resource that exposes the IPs of either the kube master or the API
-  # LBaaS pool depending on whether LBaaS is enabled for the cluster.
-  #
+  encryption_key:
+    type: string
+    description: encryption key for encrypt cluster data
 
+  wait_curl:
+    type: string
+    description: command to notify for the end of master creation
+
+resources:
   api_address_switch:
     type: Magnum::ApiGatewaySwitcher
     properties:
@@ -403,19 +408,13 @@ resources:
       master_public_ip: {get_attr: [kube_master_floating, floating_ip_address]}
       master_private_ip: {get_attr: [kube_master_eth0, fixed_ips, 0, ip_address]}
 
-  ######################################################################
-  #
-  # software configs.  these are components that are combined into
-  # a multipart MIME user-data archive.
-  #
-
-  write_heat_params:
+  write_heat_params_master:
     type: OS::Heat::SoftwareConfig
     properties:
       group: ungrouped
       config:
         str_replace:
-          template: {get_file: ../../common/templates/kubernetes/fragments/write-heat-params-master.yaml}
+          template: {get_file: ../fragments/write-heat-params-master.yaml}
           params:
             "$PROMETHEUS_MONITORING": {get_param: prometheus_monitoring}
             "$KUBE_API_PUBLIC_ADDRESS": {get_attr: [api_address_switch, public_ip]}
@@ -460,6 +459,7 @@ resources:
             "$FLANNEL_TAG": {get_param: flannel_tag}
             "$KUBE_VERSION": {get_param: kube_version}
             "$KUBE_DASHBOARD_VERSION": {get_param: kube_dashboard_version}
+            "$TRUSTEE_DOMAIN_ID": {get_param: trustee_domain_id}
             "$TRUSTEE_USER_ID": {get_param: trustee_user_id}
             "$TRUSTEE_PASSWORD": {get_param: trustee_password}
             "$TRUST_ID": {get_param: trust_id}
@@ -487,6 +487,9 @@ resources:
             "$KUBE_SERVICE_ACCOUNT_PRIVATE_KEY": {get_param: kube_service_account_private_key}
             "$PROMETHEUS_TAG": {get_param: prometheus_tag}
             "$GRAFANA_TAG": {get_param: grafana_tag}
+            "$ENCRYPTION_KEY": {get_param: encryption_key}
+            "$WAIT_CURL": {get_param: wait_curl}
+            "$EXTERNAL_NETWORK": {get_param: external_network}
 
   install_openstack_ca:
     type: OS::Heat::SoftwareConfig
@@ -496,111 +499,125 @@ resources:
         str_replace:
           params:
             $OPENSTACK_CA: {get_param: openstack_ca}
-          template: {get_file: ../../common/templates/fragments/atomic-install-openstack-ca.sh}
-
-  make_cert:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/make-cert.sh}
-
-  configure_docker_storage:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config:
-        str_replace:
-          params:
-            $configure_docker_storage_driver: {get_file: ../../common/templates/fragments/configure_docker_storage_driver_atomic.sh}
-          template: {get_file: ../../common/templates/fragments/configure-docker-storage.sh}
-
-  configure_etcd:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/configure-etcd.sh}
-
-  write_kube_os_config:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/write-kube-os-config.sh}
-
-  configure_kubernetes:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/configure-kubernetes-master.sh}
-
-  write_flannel_config:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/write-flannel-config.sh}
-
-  flannel_config_service:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/flannel-config-service.sh}
-
-  flannel_service:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/flannel-service.sh}
-
-  enable_services:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/enable-services-master.sh}
+          template: {get_file: ../fragments/install-openstack-ca.sh}
 
   disable_selinux:
     type: OS::Heat::SoftwareConfig
     properties:
       group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/disable-selinux.sh}
+      config: {get_file: ../fragments/disable-selinux.sh}
 
-  add_proxy:
+  make_cert_for_master:
     type: OS::Heat::SoftwareConfig
     properties:
       group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/add-proxy.sh}
+      config: {get_file: ../fragments/make-cert-for-master.sh}
 
-  start_container_agent:
+  install_kubectl:
     type: OS::Heat::SoftwareConfig
     properties:
       group: ungrouped
-      config: {get_file: ../../common/templates/kubernetes/fragments/start-container-agent.sh}
+      config: {get_file: ../fragments/install-kubectl.sh}
+
+  make_kubeconfig_for_master:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/make-kubeconfig-for-master.sh}
+
+  configure_etcd:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/configure-etcd.sh}
+
+  configure_encryption:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/configure-encryption.sh}
+
+  write_kube_os_config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/write-kube-os-config.sh}
+
+  configure_kubernetes_master:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/configure-kubernetes-master.sh}
+
+  make_cert_for_minion:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/make-cert-for-minion.sh}
+
+  configure_docker:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/configure-docker.sh}
+
+  make_kubeconfig_for_minion:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/make-kubeconfig-for-minion.sh}
+      
+  configure_kubernetes_minion:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/configure-kubernetes-minion.sh}
+
+  configure_kernel_params:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: {get_file: ../fragments/configure-kernel-params.sh}
+
+  master_wc_notify:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config:
+        str_replace:
+          template: |
+            #!/bin/bash -v
+            if [ "verify_ca" == "True" ]; then
+                VERIFY_CA=""
+            else
+                VERIFY_CA="-k"
+            fi
+            wc_notify $VERIFY_CA --data-binary '{"status": "SUCCESS"}'
+          params:
+            wc_notify: {get_param: wait_curl}
+            verify_ca: {get_param: verify_ca}
 
   kube_master_init:
     type: OS::Heat::MultipartMime
     properties:
       parts:
+        - config: {get_resource: write_heat_params_master}
         - config: {get_resource: install_openstack_ca}
         - config: {get_resource: disable_selinux}
-        - config: {get_resource: write_heat_params}
+        - config: {get_resource: make_cert_for_master}
+        - config: {get_resource: install_kubectl}
+        - config: {get_resource: make_kubeconfig_for_master}
         - config: {get_resource: configure_etcd}
+        - config: {get_resource: configure_encryption}
         - config: {get_resource: write_kube_os_config}
-        - config: {get_resource: configure_docker_storage}
-        - config: {get_resource: configure_kubernetes}
-        - config: {get_resource: make_cert}
-        - config: {get_resource: add_proxy}
-        - config: {get_resource: start_container_agent}
-        - config: {get_resource: enable_services}
-        - config: {get_resource: write_flannel_config}
-        - config: {get_resource: flannel_config_service}
-        - config: {get_resource: flannel_service}
+        - config: {get_resource: configure_kubernetes_master}
+        - config: {get_resource: make_cert_for_minion}
+        - config: {get_resource: configure_docker}
+        - config: {get_resource: make_kubeconfig_for_minion}
+        - config: {get_resource: configure_kubernetes_minion}
+        - config: {get_resource: configure_kernel_params}
+        - config: {get_resource: master_wc_notify}
 
-  ######################################################################
-  #
-  # a single kubernetes master.
-  #
-
-  # do NOT use "_" (underscore) in the Nova server name
-  # it creates a mismatch between the generated Nova name and its hostname
-  # which can lead to weird problems
   kube-master:
     type: OS::Nova::Server
     properties:
@@ -626,6 +643,7 @@ resources:
         - subnet: {get_param: fixed_subnet}
       allowed_address_pairs:
         - ip_address: {get_param: pods_network_cidr}
+        - ip_address: {get_param: portal_network_cidr}
       replacement_policy: AUTO
 
   kube_master_floating:
@@ -650,12 +668,6 @@ resources:
       subnet: { get_param: fixed_subnet }
       protocol_port: 2379
 
-  ######################################################################
-  #
-  # etcd storage.  This allocates a cinder volume and attaches it
-  # to the master.
-  #
-
   etcd_volume:
     type: Magnum::Optional::Etcd::Volume
     properties:
@@ -667,12 +679,6 @@ resources:
       instance_uuid: {get_resource: kube-master}
       volume_id: {get_resource: etcd_volume}
       mountpoint: /dev/vdc
-
-  ######################################################################
-  #
-  # docker storage.  This allocates a cinder volume and attaches it
-  # to the minion.
-  #
 
   docker_volume:
     type: Magnum::Optional::Cinder::Volume
@@ -688,7 +694,6 @@ resources:
       mountpoint: /dev/vdb
 
 outputs:
-
   OS::stack_id:
     value: { get_resource: kube-master }
 
