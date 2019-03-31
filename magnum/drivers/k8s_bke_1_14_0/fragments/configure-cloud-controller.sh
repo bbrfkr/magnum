@@ -86,7 +86,7 @@ spec:
       serviceAccountName: cloud-controller-manager
       containers:
         - name: openstack-cloud-controller-manager
-          image: docker.io/k8scloudprovider/openstack-cloud-controller-manager:1.14.0
+          image: docker.io/k8scloudprovider/openstack-cloud-controller-manager:v1.14.0
           args:
             - /bin/openstack-cloud-controller-manager
             - --v=1
