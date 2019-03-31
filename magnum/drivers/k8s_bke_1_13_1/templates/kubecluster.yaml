@@ -336,7 +336,7 @@ parameters:
   kube_version:
     type: string
     description: version of kubernetes used for kubernetes cluster
-    default: v1.13.2
+    default: v1.13.1
 
   kube_dashboard_version:
     type: string
