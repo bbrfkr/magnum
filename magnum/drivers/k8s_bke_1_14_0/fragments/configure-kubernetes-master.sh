@@ -19,7 +19,7 @@ mv /tmp/{kube-apiserver,kube-controller-manager,kube-scheduler} /usr/local/bin/
 
 if [ "$(echo $CLOUD_PROVIDER_ENABLED | tr '[:upper:]' '[:lower:]')" = "true" ]; then
   CLOUD_CONTROLLER_OPTIONS="--cloud-provider=external"
-  CLOUD_CONTROLLER_OPTIONS_FOR_API="--cloud-provider=external --feature-gates=CSIPersistentVolume=true --feature-gates=MountPropagation=true --runtime-config=storage.k8s.io/v1alpha1=true"
+  CLOUD_CONTROLLER_OPTIONS_FOR_API="--cloud-provider=external --runtime-config=storage.k8s.io/v1alpha1=true"
 fi
 
 # create kube-apiserver config
