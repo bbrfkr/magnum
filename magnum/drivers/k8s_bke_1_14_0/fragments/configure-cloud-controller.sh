@@ -275,7 +275,7 @@ spec:
       hostNetwork: true
       containers:
         - name: driver-registrar
-          image: quay.io/k8scsi/csi-node-driver-registrar:v0.4.1
+          image: quay.io/k8scsi/driver-registrar:v0.4.1
           args:
             - "--v=5"
             - "--csi-address=$(add_parenthesis ADDRESS)"
