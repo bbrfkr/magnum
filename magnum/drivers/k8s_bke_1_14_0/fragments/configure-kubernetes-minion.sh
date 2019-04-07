@@ -26,8 +26,8 @@ fi
 yum -y install socat conntrack ipset
 
 # install worker component binary
-wget -O /tmp/cni-plugins-amd64-v0.6.0.tgz "https://github.com/containernetworking/plugins/releases/download/v0.6.0/cni-plugins-amd64-v0.6.0.tgz"
-wget -O /tmp/crictl-v1.13.0-linux-amd64.tar.gz "https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.13.0/crictl-v1.13.0-linux-amd64.tar.gz"
+wget -O /tmp/cni-plugins-amd64-v0.7.5.tgz "https://github.com/containernetworking/plugins/releases/download/v0.7.5/cni-plugins-amd64-v0.7.5.tgz"
+wget -O /tmp/crictl-v1.14.0-linux-amd64.tar.gz "https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.14.0/crictl-v1.14.0-linux-amd64.tar.gz"
 wget -O /tmp/kubelet "https://storage.googleapis.com/kubernetes-release/release/${KUBE_VERSION}/bin/linux/amd64/kubelet"
 wget -O /tmp/kube-proxy "https://storage.googleapis.com/kubernetes-release/release/${KUBE_VERSION}/bin/linux/amd64/kube-proxy"
 
@@ -35,8 +35,8 @@ chmod +x /tmp/{kubelet,kube-proxy}
 mv /tmp/{kubelet,kube-proxy} /usr/local/bin/
 mkdir -p /etc/cni/net.d \
          /opt/cni/bin
-tar -xvf /tmp/crictl-v1.13.0-linux-amd64.tar.gz -C /usr/local/bin/
-tar -xvf /tmp/cni-plugins-amd64-v0.6.0.tgz -C /opt/cni/bin/
+tar -xvf /tmp/crictl-v1.14.0-linux-amd64.tar.gz -C /usr/local/bin/
+tar -xvf /tmp/cni-plugins-amd64-v0.7.5.tgz -C /opt/cni/bin/
 
 # configure CNI loopback
 cat <<EOF | sudo tee /etc/cni/net.d/99-loopback.conf
