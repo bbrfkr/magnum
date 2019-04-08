@@ -7,6 +7,7 @@ echo "configuring kubernetes (minion)"
 CERT_DIR=/etc/kubernetes/certs
 CONFIG_DIR=/etc/kubernetes
 YAML_CONFIG_DIR=/etc/kubernetes/config
+LOG_DIR=/var/log/kubernetes
 HOSTNAME_OVERRIDE=$(hostname --short | sed 's/\.novalocal//')
 KUBE_PROTOCOL="https"
 if [ "$TLS_DISABLED" = "True" ]; then
@@ -39,6 +40,10 @@ mkdir -p /etc/cni/net.d \
 tar -xvf /tmp/crictl-v1.14.0-linux-amd64.tar.gz -C /usr/local/bin/
 tar -xvf /tmp/cni-plugins-amd64-v0.7.5.tgz -C /opt/cni/bin/
 mv /tmp/bandwidth /opt/cni/bin
+
+if [ ! -d "${LOG_DIR}" ] ; then
+  mkdir ${LOG_DIR}
+fi
 
 # configure CNI loopback
 cat <<EOF | sudo tee /etc/cni/net.d/99-loopback.conf
@@ -87,6 +92,7 @@ ExecStart=/usr/local/bin/kubelet \\
   --register-node=true \\
   --hostname-override=${HOSTNAME_OVERRIDE} \\
   --read-only-port=10255 \\
+  --log-dir=${LOG_DIR} \\
   --v=2 ${CLOUD_CONTROLLER_OPTIONS}
 Restart=on-failure
 RestartSec=5
@@ -112,6 +118,7 @@ Documentation=https://github.com/kubernetes/kubernetes
 
 [Service]
 ExecStart=/usr/local/bin/kube-proxy \\
+  --log-dir=${LOG_DIR} \\
   --config=${YAML_CONFIG_DIR}/proxy-config.yaml
 Restart=on-failure
 RestartSec=5
