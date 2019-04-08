@@ -93,6 +93,7 @@ ExecStart=/usr/local/bin/kubelet \\
   --hostname-override=${HOSTNAME_OVERRIDE} \\
   --read-only-port=10255 \\
   --log-dir=${LOG_DIR} \\
+  --logtostderr=false \\
   --v=2 ${CLOUD_CONTROLLER_OPTIONS}
 Restart=on-failure
 RestartSec=5
@@ -119,6 +120,7 @@ Documentation=https://github.com/kubernetes/kubernetes
 [Service]
 ExecStart=/usr/local/bin/kube-proxy \\
   --log-dir=${LOG_DIR} \\
+  --logtostderr=false \\
   --config=${YAML_CONFIG_DIR}/proxy-config.yaml
 Restart=on-failure
 RestartSec=5
