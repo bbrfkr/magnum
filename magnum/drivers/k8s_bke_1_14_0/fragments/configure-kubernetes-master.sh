@@ -7,7 +7,6 @@ echo "configuring kubernetes (master)"
 CERT_DIR=/etc/kubernetes/certs
 ETCD_CERT_DIR=/etc/etcd/certs
 CONFIG_DIR=/etc/kubernetes
-LOG_DIR=/var/log/kubernetes
 YAML_CONFIG_DIR=/etc/kubernetes/config
 
 # install master component binary
@@ -21,10 +20,6 @@ mv /tmp/{kube-apiserver,kube-controller-manager,kube-scheduler} /usr/local/bin/
 if [ "$(echo $CLOUD_PROVIDER_ENABLED | tr '[:upper:]' '[:lower:]')" = "true" ]; then
   CLOUD_CONTROLLER_OPTIONS="--cloud-provider=external"
   CLOUD_CONTROLLER_OPTIONS_FOR_API="--cloud-provider=external --runtime-config=storage.k8s.io/v1alpha1=true"
-fi
-
-if [ ! -d "${LOG_DIR}" ] ; then
-  mkdir ${LOG_DIR}
 fi
 
 # create kube-apiserver config
@@ -72,8 +67,6 @@ ExecStart=/usr/local/bin/kube-apiserver \\
   --requestheader-username-headers=X-Remote-User \\
   --proxy-client-cert-file=${CERT_DIR}/front-proxy.crt \\
   --proxy-client-key-file=${CERT_DIR}/front-proxy.key \\
-  --log-dir=${LOG_DIR} \\
-  --logtostderr=false \\
   --v=2 ${CLOUD_CONTROLLER_OPTIONS_FOR_API}
 Restart=on-failure
 RestartSec=5
@@ -108,8 +101,6 @@ ExecStart=/usr/local/bin/kube-controller-manager \\
   --service-cluster-ip-range=${PORTAL_NETWORK_CIDR} \\
   --use-service-account-credentials=true \\
   --allocate-node-cidrs=true \\
-  --log-dir=${LOG_DIR} \\
-  --logtostderr=false \\
   --v=2 ${CONTROLLER_MANAGER_SIGNING_OPTIONS} ${CLOUD_CONTROLLER_OPTIONS}
 Restart=on-failure
 RestartSec=5
@@ -141,8 +132,6 @@ Documentation=https://github.com/kubernetes/kubernetes
 [Service]
 ExecStart=/usr/local/bin/kube-scheduler \\
   --config=${YAML_CONFIG_DIR}/kube-scheduler.yaml \\
-  --log-dir=${LOG_DIR} \\
-  --logtostderr=false \\
   --v=2
 Restart=on-failure
 RestartSec=5
