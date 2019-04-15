@@ -532,6 +532,47 @@ resources:
       protocol: {get_param: loadbalancing_protocol}
       port: 2379
 
+  secgroup_kube_master:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules:
+        - protocol: icmp
+        - protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+        - protocol: tcp
+          port_range_min: 7080
+          port_range_max: 7080
+        - protocol: tcp
+          port_range_min: 8080
+          port_range_max: 8080
+        - protocol: tcp
+          port_range_min: 2379
+          port_range_max: 2379
+        - protocol: tcp
+          port_range_min: 2380
+          port_range_max: 2380
+        - protocol: tcp
+          port_range_min: 6443
+          port_range_max: 6443
+        - protocol: tcp
+          port_range_min: 10250
+          port_range_max: 10250
+        - protocol: tcp
+          port_range_min: 30000
+          port_range_max: 32767
+        - protocol: udp
+          port_range_min: 8472
+          port_range_max: 8472
+
+  secgroup_kube_minion:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules:
+        - protocol: icmp
+        - protocol: tcp
+        - protocol: udp
+
   api_address_lb_switch:
     type: Magnum::ApiGatewaySwitcher
     properties:
@@ -608,6 +649,7 @@ resources:
           kube_dashboard_enabled: {get_param: kube_dashboard_enabled}
           influx_grafana_dashboard_enabled: {get_param: influx_grafana_dashboard_enabled}
           verify_ca: {get_param: verify_ca}
+          secgroup_kube_master_id: {get_resource: secgroup_kube_master}
           http_proxy: {get_param: http_proxy}
           https_proxy: {get_param: https_proxy}
           no_proxy: {get_param: no_proxy}
@@ -733,6 +775,7 @@ resources:
           kubernetes_port: {get_param: kubernetes_port}
           tls_disabled: {get_param: tls_disabled}
           verify_ca: {get_param: verify_ca}
+          secgroup_kube_minion_id: {get_resource: secgroup_kube_minion}
           http_proxy: {get_param: http_proxy}
           https_proxy: {get_param: https_proxy}
           no_proxy: {get_param: no_proxy}
