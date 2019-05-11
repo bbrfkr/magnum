@@ -59,7 +59,7 @@ configure_devicemapper () {
   "exec-opts": ["native.cgroupdriver=${CGROUP_DRIVER}"],
   "storage-driver": "devicemapper",
   "storage-opts": [
-    "dm.directlvm_device=/dev/vdb",
+    "dm.directlvm_device=/dev/sdb",
     "dm.thinp_percent=95",
     "dm.thinp_metapercent=1",
     "dm.thinp_autoextend_threshold=80",
