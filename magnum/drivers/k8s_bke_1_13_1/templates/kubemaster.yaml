@@ -334,6 +334,10 @@ parameters:
     description: >
       node role where the ingress controller should run
 
+  octavia_ingress_controller_tag:
+    type: string
+    description: Octavia ingress controller docker image tag.
+
   kubelet_options:
     type: string
     description: >
@@ -477,6 +481,7 @@ resources:
             "$CALICO_IPV4POOL": {get_param: calico_ipv4pool}
             "$INGRESS_CONTROLLER": {get_param: ingress_controller}
             "$INGRESS_CONTROLLER_ROLE": {get_param: ingress_controller_role}
+            "$OCTAVIA_INGRESS_CONTROLLER_TAG": {get_param: octavia_ingress_controller_tag}
             "$KUBELET_OPTIONS": {get_param: kubelet_options}
             "$KUBEAPI_OPTIONS": {get_param: kubeapi_options}
             "$KUBECONTROLLER_OPTIONS": {get_param: kubecontroller_options}

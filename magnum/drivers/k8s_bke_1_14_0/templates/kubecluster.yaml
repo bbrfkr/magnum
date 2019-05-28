@@ -435,6 +435,11 @@ parameters:
       node role where the ingress controller backend should run
     default: "ingress"
 
+  octavia_ingress_controller_tag:
+    type: string
+    description: Octavia ingress controller docker image tag.
+    default: "1.13.2-alpha"
+
   kubelet_options:
     type: string
     description: >
@@ -528,7 +533,6 @@ resources:
     type: ../../common/templates/lb_etcd.yaml
     properties:
       fixed_subnet: {get_attr: [network, fixed_subnet]}
-      external_network: {get_param: external_network}
       protocol: {get_param: loadbalancing_protocol}
       port: 2379
 
@@ -681,6 +685,7 @@ resources:
           pods_network_cidr: {get_param: pods_network_cidr}
           ingress_controller: {get_param: ingress_controller}
           ingress_controller_role: {get_param: ingress_controller_role}
+          octavia_ingress_controller_tag: {get_param: octavia_ingress_controller_tag}
           kubelet_options: {get_param: kubelet_options}
           kubeapi_options: {get_param: kubeapi_options}
           kubeproxy_options: {get_param: kubeproxy_options}
@@ -716,6 +721,11 @@ resources:
             - get_file: ../fragments/configure-cni.sh
             - get_file: ../fragments/configure-coredns.sh
             - get_file: ../fragments/configure-cloud-controller.sh
+            - str_replace:
+                params:
+                  $enable-ingress-traefik: {get_file: ../../common/templates/kubernetes/fragments/enable-ingress-traefik.sh}
+                  $enable-ingress-octavia: {get_file: ../../common/templates/kubernetes/fragments/enable-ingress-octavia.sh}
+                template: {get_file: ../../common/templates/kubernetes/fragments/enable-ingress-controller.sh}
 
   kube_cluster_deploy:
     type: OS::Heat::SoftwareDeployment
