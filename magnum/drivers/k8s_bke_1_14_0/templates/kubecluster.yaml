@@ -723,9 +723,8 @@ resources:
             - get_file: ../fragments/configure-cloud-controller.sh
             - str_replace:
                 params:
-                  $enable-ingress-traefik: {get_file: ../../common/templates/kubernetes/fragments/enable-ingress-traefik.sh}
-                  $enable-ingress-octavia: {get_file: ../../common/templates/kubernetes/fragments/enable-ingress-octavia.sh}
-                template: {get_file: ../../common/templates/kubernetes/fragments/enable-ingress-controller.sh}
+                  $enable-ingress-octavia: {get_file: ../fragments/enable-ingress-octavia.sh}
+                template: {get_file: ../fragments/enable-ingress-controller.sh}
 
   kube_cluster_deploy:
     type: OS::Heat::SoftwareDeployment
