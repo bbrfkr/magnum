@@ -248,12 +248,19 @@ spec:
             - name: secret-cinderplugin
               mountPath: /etc/config
               readOnly: true
+            - mountPath: /etc/kubernetes
+              name: k8s-configs
+              readOnly: true
       volumes:
         - name: socket-dir
           emptyDir:
         - name: secret-cinderplugin
           secret:
             secretName: csi-secret-cinderplugin
+        - hostPath:
+            path: /etc/kubernetes
+            type: DirectoryOrCreate
+          name: k8s-configs
 ---
 kind: DaemonSet
 apiVersion: apps/v1beta2
@@ -332,6 +339,9 @@ spec:
             - name: secret-cinderplugin
               mountPath: /etc/config
               readOnly: true
+            - mountPath: /etc/kubernetes
+              name: k8s-configs
+              readOnly: true
       volumes:
         - name: socket-dir
           hostPath:
@@ -356,6 +366,10 @@ spec:
         - name: secret-cinderplugin
           secret:
             secretName: csi-secret-cinderplugin
+        - hostPath:
+            path: /etc/kubernetes
+            type: DirectoryOrCreate
+          name: k8s-configs
 ---
 kind: Service
 apiVersion: v1
@@ -424,12 +438,19 @@ spec:
             - name: secret-cinderplugin
               mountPath: /etc/config
               readOnly: true
+            - mountPath: /etc/kubernetes
+              name: k8s-configs
+              readOnly: true
       volumes:
         - name: socket-dir
           emptyDir:
         - name: secret-cinderplugin
           secret:
             secretName: csi-secret-cinderplugin
+        - hostPath:
+            path: /etc/kubernetes
+            type: DirectoryOrCreate
+          name: k8s-configs
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
