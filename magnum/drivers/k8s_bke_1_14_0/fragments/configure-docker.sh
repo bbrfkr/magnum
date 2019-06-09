@@ -46,6 +46,7 @@ configure_storage_driver_generic() {
 
     cat <<EOF > /etc/docker/daemon.json
 {
+  "mtu": 1450,
   "exec-opts": ["native.cgroupdriver=${CGROUP_DRIVER}"],
   "storage-driver": "$1"
 }
@@ -56,6 +57,7 @@ EOF
 configure_devicemapper () {
     cat <<EOF > /etc/docker/daemon.json
 {
+  "mtu": 1450,
   "exec-opts": ["native.cgroupdriver=${CGROUP_DRIVER}"],
   "storage-driver": "devicemapper",
   "storage-opts": [
