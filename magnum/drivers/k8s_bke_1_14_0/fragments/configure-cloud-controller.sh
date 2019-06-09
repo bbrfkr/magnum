@@ -226,7 +226,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: cinder
-          image: docker.io/bbrfkr0129/cinder-csi-plugin:1.13.1
+          image: docker.io/bbrfkr0129/cinder-csi-plugin:v1.14.0
           args :
             - /bin/cinder-csi-plugin
             - "--nodeid=$(add_parenthesis NODE_ID)"
@@ -308,7 +308,7 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
             allowPrivilegeEscalation: true
-          image: docker.io/bbrfkr0129/cinder-csi-plugin:1.13.1
+          image: docker.io/bbrfkr0129/cinder-csi-plugin:v1.14.0
           args :
             - /bin/cinder-csi-plugin
             - "--nodeid=$(add_parenthesis NODE_ID)"
@@ -416,7 +416,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: cinder
-          image: docker.io/bbrfkr0129/cinder-csi-plugin:1.13.1
+          image: docker.io/bbrfkr0129/cinder-csi-plugin:v1.14.0
           args :
             - /bin/cinder-csi-plugin
             - "--nodeid=$(add_parenthesis NODE_ID)"
