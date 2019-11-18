@@ -10,7 +10,7 @@ EOF
     chown root:root $CA_FILE
     update-ca-trust extract
 
-    sed -i 's@\[Service\]@[Service]\nEnvironment=REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt@g' /var/lib/systemd/system/os-collect-config.service
+    sed -i 's@\[Service\]@[Service]\nEnvironment=REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt@g' /usr/lib/systemd/system/os-collect-config.service
     systemctl daemon-reload
     systemctl restart os-collect-config
 fi
