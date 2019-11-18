@@ -6,10 +6,11 @@ if [ -n "$OPENSTACK_CA" ] ; then
     cat >> $CA_FILE <<EOF
 $OPENSTACK_CA
 EOF
-    cat >> /opt/stack/venvs/os-collect-config/lib/python2.7/site-packages/requests/cacert.pem <<EOF
-$OPENSTACK_CA
-EOF
     chmod 444 $CA_FILE
     chown root:root $CA_FILE
     update-ca-trust extract
+
+    sed -i 's@\[Service\]@[Service]\nEnvironment=REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt@g' /var/lib/systemd/system/os-collect-config.service
+    systemctl daemon-reload
+    systemctl restart os-collect-config
 fi
