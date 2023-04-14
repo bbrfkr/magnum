@@ -2,13 +2,7 @@ set +x
 . /etc/sysconfig/heat-params
 set -x
 
-ssh_cmd="ssh -F /srv/magnum/.ssh/config root@localhost"
-
-if [ ${CONTAINER_RUNTIME} = "containerd"  ] ; then
-    SERVICE_DIR="/etc/systemd/system/containerd.service.d"
-else
-    SERVICE_DIR="/etc/systemd/system/docker.service.d"
-fi
+SERVICE_DIR="/etc/systemd/system/containerd.service.d"
 
 HTTP_PROXY_CONF=${SERVICE_DIR}/http_proxy.conf
 
@@ -68,10 +62,6 @@ EOF
 fi
 
 if [ "$RUNTIME_RESTART" -eq 1 ]; then
-    $ssh_cmd systemctl daemon-reload
-    if [ ${CONTAINER_RUNTIME} = "containerd"  ] ; then
-        $ssh_cmd systemctl --no-block restart containerd.service
-    else
-        $ssh_cmd systemctl --no-block restart docker.service
-    fi
+    systemctl daemon-reload
+    systemctl --no-block restart containerd.service
 fi

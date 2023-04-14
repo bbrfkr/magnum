@@ -1372,7 +1372,6 @@ resources:
           - "\n"
           -
             - "#!/bin/bash"
-            - "echo 'heat agents has worked!' > /root/cluster-test.txt"
             # - "source /etc/bashrc"
             # - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/kube-apiserver-to-kubelet-role.sh
             # - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/core-dns-service.sh

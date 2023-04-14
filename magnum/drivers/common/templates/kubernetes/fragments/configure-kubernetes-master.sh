@@ -5,8 +5,6 @@ set -e
 
 echo "configuring kubernetes (master)"
 
-ssh_cmd="ssh -F /srv/magnum/.ssh/config root@localhost"
-
 if [ ! -z "$HTTP_PROXY" ]; then
     export HTTP_PROXY
 fi
@@ -19,15 +17,15 @@ if [ ! -z "$NO_PROXY" ]; then
     export NO_PROXY
 fi
 
-$ssh_cmd rm -rf /etc/cni/net.d/*
-$ssh_cmd rm -rf /var/lib/cni/*
-$ssh_cmd rm -rf /opt/cni/*
-$ssh_cmd mkdir -p /opt/cni/bin
-$ssh_cmd mkdir -p /etc/cni/net.d/
+rm -rf /etc/cni/net.d/*
+rm -rf /var/lib/cni/*
+rm -rf /opt/cni/*
+mkdir -p /opt/cni/bin
+mkdir -p /etc/cni/net.d/
 
 if [ "$NETWORK_DRIVER" = "calico" ]; then
     echo "net.ipv4.conf.all.rp_filter = 1" >> /etc/sysctl.conf
-    $ssh_cmd sysctl -p
+    sysctl -p
     if [ "`systemctl status NetworkManager.service | grep -o "Active: active"`" = "Active: active" ]; then
         CALICO_NM=/etc/NetworkManager/conf.d/calico.conf
         [ -f ${CALICO_NM} ] || {
@@ -41,7 +39,7 @@ EOF
         systemctl restart NetworkManager
     fi
 elif [ "$NETWORK_DRIVER" = "flannel" ]; then
-    $ssh_cmd modprobe vxlan
+    modprobe vxlan
     echo "vxlan" > /etc/modules-load.d/vxlan.conf
 fi
 
@@ -73,9 +71,7 @@ cat > /etc/kubernetes/proxy <<EOF
 KUBE_PROXY_ARGS=""
 EOF
 
-
-if [ "$(echo $USE_PODMAN | tr '[:upper:]' '[:lower:]')" == "true" ]; then
-    cat > /etc/systemd/system/kube-apiserver.service <<EOF
+cat > /etc/systemd/system/kube-apiserver.service <<EOF
 [Unit]
 Description=kube-apiserver via Hyperkube
 [Service]
@@ -83,8 +79,8 @@ EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
 EnvironmentFile=/etc/kubernetes/apiserver
 ExecStartPre=/bin/mkdir -p /etc/kubernetes/
-ExecStartPre=-/usr/bin/podman rm kube-apiserver
-ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-apiserver \\
+ExecStartPre=-/bin/containerd rm kube-apiserver
+ExecStart=/bin/bash -c '/bin/containerd run --name kube-apiserver \\
     --net host \\
     --entrypoint /hyperkube \\
     --volume /etc/kubernetes:/etc/kubernetes:ro,z \\
@@ -95,7 +91,7 @@ ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-apiserver \\
     \${CONTAINER_INFRA_PREFIX:-\${HYPERKUBE_PREFIX}}hyperkube:\${KUBE_TAG} \\
     kube-apiserver \\
     \$KUBE_LOGTOSTDERR \$KUBE_LOG_LEVEL \$KUBE_ETCD_SERVERS \$KUBE_API_ADDRESS \$KUBELET_PORT \$KUBE_SERVICE_ADDRESSES \$KUBE_ADMISSION_CONTROL \$KUBE_API_ARGS'
-ExecStop=-/usr/bin/podman stop kube-apiserver
+ExecStop=-/bin/containerd stop kube-apiserver
 Delegate=yes
 Restart=always
 RestartSec=10
@@ -104,7 +100,7 @@ TimeoutStartSec=10min
 WantedBy=multi-user.target
 EOF
 
-    cat > /etc/systemd/system/kube-controller-manager.service <<EOF
+cat > /etc/systemd/system/kube-controller-manager.service <<EOF
 [Unit]
 Description=kube-controller-manager via Hyperkube
 [Service]
@@ -112,8 +108,8 @@ EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
 EnvironmentFile=/etc/kubernetes/controller-manager
 ExecStartPre=/bin/mkdir -p /etc/kubernetes/
-ExecStartPre=-/usr/bin/podman rm kube-controller-manager
-ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-controller-manager \\
+ExecStartPre=-/bin/containerd rm kube-controller-manager
+ExecStart=/bin/bash -c '/bin/containerd run --name kube-controller-manager \\
     --net host \\
     --entrypoint /hyperkube \\
     --volume /etc/kubernetes:/etc/kubernetes:ro,z \\
@@ -125,7 +121,7 @@ ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-controller-manager \\
     kube-controller-manager \\
     --secure-port=0 \\
     \$KUBE_LOGTOSTDERR \$KUBE_LOG_LEVEL \$KUBE_MASTER \$KUBE_CONTROLLER_MANAGER_ARGS'
-ExecStop=-/usr/bin/podman stop kube-controller-manager
+ExecStop=-/bin/containerd stop kube-controller-manager
 Delegate=yes
 Restart=always
 RestartSec=10
@@ -134,7 +130,7 @@ TimeoutStartSec=10min
 WantedBy=multi-user.target
 EOF
 
-    cat > /etc/systemd/system/kube-scheduler.service <<EOF
+cat > /etc/systemd/system/kube-scheduler.service <<EOF
 [Unit]
 Description=kube-scheduler via Hyperkube
 [Service]
@@ -142,8 +138,8 @@ EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
 EnvironmentFile=/etc/kubernetes/scheduler
 ExecStartPre=/bin/mkdir -p /etc/kubernetes/
-ExecStartPre=-/usr/bin/podman rm kube-scheduler
-ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-scheduler \\
+ExecStartPre=-/bin/containerd rm kube-scheduler
+ExecStart=/bin/bash -c '/bin/containerd run --name kube-scheduler \\
     --net host \\
     --entrypoint /hyperkube \\
     --volume /etc/kubernetes:/etc/kubernetes:ro,z \\
@@ -154,7 +150,7 @@ ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-scheduler \\
     \${CONTAINER_INFRA_PREFIX:-\${HYPERKUBE_PREFIX}}hyperkube:\${KUBE_TAG} \\
     kube-scheduler \\
     \$KUBE_LOGTOSTDERR \$KUBE_LOG_LEVEL \$KUBE_MASTER \$KUBE_SCHEDULER_ARGS'
-ExecStop=-/usr/bin/podman stop kube-scheduler
+ExecStop=-/bin/containerd stop kube-scheduler
 Delegate=yes
 Restart=always
 RestartSec=10
@@ -165,7 +161,7 @@ EOF
 
 
 
-    cat > /etc/systemd/system/kubelet.service <<EOF
+cat > /etc/systemd/system/kubelet.service <<EOF
 [Unit]
 Description=Kubelet via Hyperkube (System Container)
 Wants=rpc-statd.service
@@ -181,8 +177,8 @@ ExecStartPre=/bin/mkdir -p /var/lib/containerd
 ExecStartPre=/bin/mkdir -p /var/lib/docker
 ExecStartPre=/bin/mkdir -p /var/lib/kubelet/volumeplugins
 ExecStartPre=/bin/mkdir -p /opt/cni/bin
-ExecStartPre=-/usr/bin/podman rm kubelet
-ExecStart=/bin/bash -c '/usr/bin/podman run --name kubelet \\
+ExecStartPre=-/bin/containerd rm kubelet
+ExecStart=/bin/bash -c '/bin/containerd run --name kubelet \\
     --privileged \\
     --pid host \\
     --network host \\
@@ -209,7 +205,7 @@ ExecStart=/bin/bash -c '/usr/bin/podman run --name kubelet \\
     \${CONTAINER_INFRA_PREFIX:-\${HYPERKUBE_PREFIX}}hyperkube:\${KUBE_TAG} \\
     kubelet \\
     \$KUBE_LOGTOSTDERR \$KUBE_LOG_LEVEL \$KUBELET_API_SERVER \$KUBELET_ADDRESS \$KUBELET_PORT \$KUBELET_HOSTNAME \$KUBELET_ARGS'
-ExecStop=-/usr/bin/podman stop kubelet
+ExecStop=-/bin/containerd stop kubelet
 Delegate=yes
 Restart=always
 RestartSec=10
@@ -218,7 +214,7 @@ TimeoutStartSec=10min
 WantedBy=multi-user.target
 EOF
 
-    cat > /etc/systemd/system/kube-proxy.service <<EOF
+cat > /etc/systemd/system/kube-proxy.service <<EOF
 [Unit]
 Description=kube-proxy via Hyperkube
 [Service]
@@ -226,8 +222,8 @@ EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
 EnvironmentFile=/etc/kubernetes/proxy
 ExecStartPre=/bin/mkdir -p /etc/kubernetes/
-ExecStartPre=-/usr/bin/podman rm kube-proxy
-ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-proxy \\
+ExecStartPre=-/bin/containerd rm kube-proxy
+ExecStart=/bin/bash -c '/bin/containerd run --name kube-proxy \\
     --privileged \\
     --net host \\
     --entrypoint /hyperkube \\
@@ -241,7 +237,7 @@ ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-proxy \\
     \${CONTAINER_INFRA_PREFIX:-\${HYPERKUBE_PREFIX}}hyperkube:\${KUBE_TAG} \\
     kube-proxy \\
     \$KUBE_LOGTOSTDERR \$KUBE_LOG_LEVEL \$KUBE_MASTER \$KUBE_PROXY_ARGS'
-ExecStop=-/usr/bin/podman stop kube-proxy
+ExecStop=-/bin/containerd stop kube-proxy
 Delegate=yes
 Restart=always
 RestartSec=10
@@ -249,21 +245,6 @@ TimeoutStartSec=10min
 [Install]
 WantedBy=multi-user.target
 EOF
-else
-    _prefix=${CONTAINER_INFRA_PREFIX:-docker.io/openstackmagnum/}
-    _addtl_mounts=',{"type":"bind","source":"/opt/cni","destination":"/opt/cni","options":["bind","rw","slave","mode=777"]},{"type":"bind","source":"/var/lib/docker","destination":"/var/lib/docker","options":["bind","rw","slave","mode=755"]}'
-    mkdir -p /srv/magnum/kubernetes/
-    cat > /srv/magnum/kubernetes/install-kubernetes.sh <<EOF
-#!/bin/bash -x
-atomic install --storage ostree --system --set=ADDTL_MOUNTS='${_addtl_mounts}' --system-package=no --name=kubelet ${_prefix}kubernetes-kubelet:${KUBE_TAG}
-atomic install --storage ostree --system --system-package=no --name=kube-apiserver ${_prefix}kubernetes-apiserver:${KUBE_TAG}
-atomic install --storage ostree --system --system-package=no --name=kube-controller-manager ${_prefix}kubernetes-controller-manager:${KUBE_TAG}
-atomic install --storage ostree --system --system-package=no --name=kube-scheduler ${_prefix}kubernetes-scheduler:${KUBE_TAG}
-atomic install --storage ostree --system --system-package=no --name=kube-proxy ${_prefix}kubernetes-proxy:${KUBE_TAG}
-EOF
-    chmod +x /srv/magnum/kubernetes/install-kubernetes.sh
-    $ssh_cmd "/srv/magnum/kubernetes/install-kubernetes.sh"
-fi
 
 CERT_DIR=/etc/kubernetes/certs
 
@@ -428,7 +409,7 @@ sed -i '
 
 sed -i '/^KUBE_SCHEDULER_ARGS=/ s#=.*#="--leader-elect=true --kubeconfig=/etc/kubernetes/admin.conf"#' /etc/kubernetes/scheduler
 
-$ssh_cmd mkdir -p /etc/kubernetes/manifests
+mkdir -p /etc/kubernetes/manifests
 KUBELET_ARGS="--register-node=true --pod-manifest-path=/etc/kubernetes/manifests --hostname-override=${INSTANCE_NAME}"
 KUBELET_ARGS="${KUBELET_ARGS} --pod-infra-container-image=${CONTAINER_INFRA_PREFIX:-gcr.io/google_containers/}pause:3.1"
 KUBELET_ARGS="${KUBELET_ARGS} --cluster_dns=${DNS_SERVICE_IP} --cluster_domain=${DNS_CLUSTER_DOMAIN}"
@@ -495,12 +476,10 @@ KUBELET_ARGS="${KUBELET_ARGS} --client-ca-file=${CERT_DIR}/ca.crt --tls-cert-fil
 
 # specified cgroup driver
 KUBELET_ARGS="${KUBELET_ARGS} --cgroup-driver=${CGROUP_DRIVER}"
-if [ ${CONTAINER_RUNTIME} = "containerd"  ] ; then
-    KUBELET_ARGS="${KUBELET_ARGS} --runtime-cgroups=/system.slice/containerd.service"
-    KUBELET_ARGS="${KUBELET_ARGS} --container-runtime=remote"
-    KUBELET_ARGS="${KUBELET_ARGS} --runtime-request-timeout=15m"
-    KUBELET_ARGS="${KUBELET_ARGS} --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
-fi
+KUBELET_ARGS="${KUBELET_ARGS} --runtime-cgroups=/system.slice/containerd.service"
+KUBELET_ARGS="${KUBELET_ARGS} --container-runtime=remote"
+KUBELET_ARGS="${KUBELET_ARGS} --runtime-request-timeout=15m"
+KUBELET_ARGS="${KUBELET_ARGS} --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 
 if [ -z "${KUBE_NODE_IP}" ]; then
     KUBE_NODE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
