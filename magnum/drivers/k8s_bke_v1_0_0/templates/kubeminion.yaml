@@ -582,7 +582,7 @@ resources:
   upgrade_kubernetes_deployment:
     type: OS::Heat::SoftwareDeployment
     properties:
-      signal_transport: NO_SIGNAL
+      signal_transport: HEAT_SIGNAL
       config: {get_resource: upgrade_kubernetes}
       server: {if: ["volume_based", {get_resource: kube-minion-bfv}, {get_resource: kube-minion}]}
       actions: ['UPDATE']
