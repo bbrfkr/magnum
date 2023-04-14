@@ -388,7 +388,7 @@ resources:
           -
             - "#!/bin/bash"
             - str_replace:
-                template: {get_file: ../../common/templates/fragments/atomic-install-openstack-ca.sh}
+                template: {get_file: ../../common/templates/fragments/bke_v1_0_0/ubuntu-install-openstack-ca.sh}
                 params:
                   $OPENSTACK_CA: {get_param: openstack_ca}
             # - str_replace:
