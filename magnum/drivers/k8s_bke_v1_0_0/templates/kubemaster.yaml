@@ -916,6 +916,7 @@ resources:
       name: {get_param: name}
       image: {get_param: server_image}
       flavor: {get_param: master_flavor}
+      key_name: {get_param: ssh_key_name}
       user_data_format: SOFTWARE_CONFIG
       software_config_transport: POLL_SERVER_HEAT
       networks:
@@ -929,6 +930,7 @@ resources:
     properties:
       name: {get_param: name}
       flavor: {get_param: master_flavor}
+      key_name: {get_param: ssh_key_name}
       user_data_format: SOFTWARE_CONFIG
       software_config_transport: POLL_SERVER_HEAT
       networks:
