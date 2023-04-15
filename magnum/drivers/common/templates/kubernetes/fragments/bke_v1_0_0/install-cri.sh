@@ -6,8 +6,8 @@ echo "START: install cri"
 set -x
 
 # install containerd
-wget -O /tmp/containerd-linux-amd64.tar.gz "https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz"
-wget -O /tmp/containerd-linux-amd64.sha256sum "https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz.sha256sum"
+wget -O /tmp/containerd-linux-amd64.tar.gz "https://github.com/containerd/containerd/releases/download/v1.7.0/containerd-1.7.0-linux-amd64.tar.gz"
+wget -O /tmp/containerd-linux-amd64.sha256sum "https://github.com/containerd/containerd/releases/download/v1.7.0/containerd-1.7.0-linux-amd64.tar.gz.sha256sum"
 CONTAINERD_TARBALL_SHA256=$(cat /tmp/nerdctl-linux-amd64.sha256sum | awk '{ print $1 }')
 if ! echo "${CONTAINERD_TARBALL_SHA256} /tmp/containerd-linux-amd64.tar.gz" | sha256sum -c - ; then
     echo "ERROR containerd-linux-amd64.tar.gz computed checksum did NOT match, exiting."
