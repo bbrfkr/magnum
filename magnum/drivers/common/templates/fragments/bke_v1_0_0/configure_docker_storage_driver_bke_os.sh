@@ -17,6 +17,5 @@ configure_storage_driver_generic() {
         mkfs.xfs -f ${device_path}
         echo "${device_path} ${storage_dir} xfs defaults 0 0" >> /etc/fstab
         mount -a
-        restorecon -R ${storage_dir}
     fi
 }
