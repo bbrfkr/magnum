@@ -132,7 +132,7 @@ nginx-ingress:
     enabled: true
     name: default-backend
     image:
-      repository: ${CONTAINER_INFRA_PREFIX:-k8s.gcr.io/}defaultbackend
+      repository: ${CONTAINER_INFRA_PREFIX:-registry.k8s.io/}defaultbackend
       tag: "1.4"
       pullPolicy: IfNotPresent
     extraArgs: {}

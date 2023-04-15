@@ -3,7 +3,7 @@ printf "Starting to run ${step}\n"
 
 . /etc/sysconfig/heat-params
 
-_gcr_prefix=${CONTAINER_INFRA_PREFIX:-k8s.gcr.io/}
+_gcr_prefix=${CONTAINER_INFRA_PREFIX:-registry.k8s.io/}
 
 # Either auto scaling or auto healing we need CA to be deployed
 if [[ "$(echo $AUTO_HEALING_ENABLED | tr '[:upper:]' '[:lower:]')" = "true" || "$(echo $NPD_ENABLED | tr '[:upper:]' '[:lower:]')" = "true" ]]; then

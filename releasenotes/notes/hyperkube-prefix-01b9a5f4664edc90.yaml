@@ -1,7 +1,7 @@
 ---
 features:
   - |
-    Support `hyperkube_prefix` label which defaults to k8s.gcr.io/. Users now
+    Support `hyperkube_prefix` label which defaults to registry.k8s.io/. Users now
     have the option to define alternative hyperkube image source since the
     default source has discontinued publication of hyperkube images for
     `kube_tag` greater than 1.18.x. Note that if `container_infra_prefix` label

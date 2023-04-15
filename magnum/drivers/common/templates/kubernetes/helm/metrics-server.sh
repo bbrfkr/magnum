@@ -19,7 +19,7 @@ EOF
     cat << EOF >> ${HELM_CHART_DIR}/values.yaml
 metrics-server:
   image:
-    repository: ${CONTAINER_INFRA_PREFIX:-k8s.gcr.io/metrics-server/}metrics-server
+    repository: ${CONTAINER_INFRA_PREFIX:-registry.k8s.io/metrics-server/}metrics-server
   resources:
     requests:
       cpu: 100m

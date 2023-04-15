@@ -447,7 +447,7 @@ parameters:
   hyperkube_prefix:
     type: string
     description: prefix to use for hyperkube images
-    default: k8s.gcr.io/
+    default: registry.k8s.io/
 
   kube_tag:
     type: string

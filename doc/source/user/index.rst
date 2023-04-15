@@ -1245,14 +1245,14 @@ _`container_infra_prefix`
 
   Images that might be needed:
 
-  * k8s.gcr.io/hyperkube:v1.18.2
+  * registry.k8s.io/hyperkube:v1.18.2
   * docker.io/grafana/grafana:5.1.5
   * docker.io/prom/node-exporter:latest
   * docker.io/prom/prometheus:latest
   * docker.io/traefik:v1.7.28
   * gcr.io/google_containers/kubernetes-dashboard-amd64:v1.5.1
   * gcr.io/google_containers/metrics-server-amd64:v0.3.6
-  * k8s.gcr.io/node-problem-detector:v0.6.2
+  * registry.k8s.io/node-problem-detector:v0.6.2
   * docker.io/planetlabs/draino:abf028a
   * docker.io/openstackmagnum/cluster-autoscaler:v1.18.1
   * quay.io/calico/cni:v3.13.1
@@ -1579,7 +1579,7 @@ _`use_podman`
 
   k8s_fedora_atomic_v1 defaults to use_podman=false, meaning atomic will be
   used pulling containers from docker.io/openstackmagnum. use_podman=true
-  is accepted as well, which will pull containers by k8s.gcr.io.
+  is accepted as well, which will pull containers by registry.k8s.io.
 
   k8s_fedora_coreos_v1 defaults and accepts only use_podman=true.
 

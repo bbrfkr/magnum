@@ -7,7 +7,7 @@ features:
 
     k8s_fedora_atomic_v1 defaults to use_podman=false, meaning atomic will be
     used pulling containers from docker.io/openstackmagnum. use_podman=true
-    is accepted as well, which will pull containers by k8s.gcr.io.
+    is accepted as well, which will pull containers by registry.k8s.io.
 
     k8s_fedora_coreos_v1 defaults and accepts only use_podman=true.
 
