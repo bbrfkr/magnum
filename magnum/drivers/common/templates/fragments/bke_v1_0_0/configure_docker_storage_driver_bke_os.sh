@@ -5,7 +5,7 @@ clear_docker_storage () {
     # stop containerd
     systemctl stop ${runtime}
     # clear storage graph
-    rm -rf ${storage_dir}
+    rm -rf ${storage_dir}/*
     mkdir -p ${storage_dir}
 }
 

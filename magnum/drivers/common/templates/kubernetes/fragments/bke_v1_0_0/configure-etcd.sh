@@ -57,7 +57,7 @@ ExecStartPre=mkdir -p /var/lib/etcd
 ExecStartPre=-/usr/bin/podman rm etcd
 ExecStart=/usr/bin/podman run \\
     --name etcd \\
-    --volume /etc/pki/ca-trust/extracted/pem:/etc/ssl/certs:ro,z \\
+    --volume /usr/share/ca-certificates/mozilla:/etc/ssl/certs:ro,z \\
     --volume /etc/etcd:/etc/etcd:ro,z \\
     --volume /var/lib/etcd:/var/lib/etcd:rshared,z \\
     --net=host \\
