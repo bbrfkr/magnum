@@ -73,6 +73,7 @@ EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
 EnvironmentFile=/etc/kubernetes/apiserver
 ExecStartPre=/bin/mkdir -p /etc/kubernetes/
+ExecStartPre=/bin/bash -c 'nerdctl stop kube-apiserver; nerdctl rm -f kube-apiserver || exit 0'
 ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kube-apiserver \\
     --net host \\
     --volume /etc/kubernetes:/etc/kubernetes:ro,z \\
@@ -83,7 +84,7 @@ ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kube-apiserver \\
     \${CONTAINER_INFRA_PREFIX:-registry.k8s.io/}kube-apiserver:${KUBE_TAG} \\
     kube-apiserver \\
     \$KUBE_LOG_LEVEL \$KUBE_ETCD_SERVERS \$KUBE_API_ADDRESS \$KUBELET_PORT \$KUBE_SERVICE_ADDRESSES \$KUBE_ADMISSION_CONTROL \$KUBE_API_ARGS'
-ExecStop=/bin/bash -c 'nerdctl stop kube-apiserver; nerdctl rm -f kube-apiserver'
+ExecStop=/bin/bash -c 'nerdctl stop kube-apiserver; nerdctl rm -f kube-apiserver || exit 0'
 Delegate=yes
 Restart=always
 RestartSec=10
@@ -100,6 +101,7 @@ EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
 EnvironmentFile=/etc/kubernetes/controller-manager
 ExecStartPre=/bin/mkdir -p /etc/kubernetes/
+ExecStartPre=/bin/bash -c 'nerdctl stop kube-controller-manager; nerdctl rm -f kube-controller-manager || exit 0'
 ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kube-controller-manager \\
     --net host \\
     --volume /etc/kubernetes:/etc/kubernetes:ro,z \\
@@ -111,7 +113,7 @@ ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kube-controller-manage
     kube-controller-manager \\
     --secure-port=0 \\
     \$KUBE_LOG_LEVEL \$KUBE_MASTER \$KUBE_CONTROLLER_MANAGER_ARGS'
-ExecStop=/bin/bash -c 'nerdctl stop kube-controller-manager; nerdctl rm -f kube-controller-manager'
+ExecStop=/bin/bash -c 'nerdctl stop kube-controller-manager; nerdctl rm -f kube-controller-manager || exit 0'
 Delegate=yes
 Restart=always
 RestartSec=10
@@ -128,6 +130,7 @@ EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
 EnvironmentFile=/etc/kubernetes/scheduler
 ExecStartPre=/bin/mkdir -p /etc/kubernetes/
+ExecStartPre=/bin/bash -c 'nerdctl stop kube-scheduler; nerdctl rm -f kube-scheduler || exit 0'
 ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kube-scheduler \\
     --net host \\
     --volume /etc/kubernetes:/etc/kubernetes:ro,z \\
@@ -138,7 +141,7 @@ ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kube-scheduler \\
     \${CONTAINER_INFRA_PREFIX:-registry.k8s.io/}kube-scheduler:\${KUBE_TAG} \\
     kube-scheduler \\
     \$KUBE_LOG_LEVEL \$KUBE_MASTER \$KUBE_SCHEDULER_ARGS'
-ExecStop=/bin/bash -c 'nerdctl stop kube-scheduler; nerdctl rm -f kube-controller-scheduler'
+ExecStop=/bin/bash -c 'nerdctl stop kube-scheduler; nerdctl rm -f kube-controller-scheduler || exit 0'
 Delegate=yes
 Restart=always
 RestartSec=10
@@ -165,6 +168,7 @@ ExecStartPre=/bin/mkdir -p /var/lib/containerd
 ExecStartPre=/bin/mkdir -p /var/lib/docker
 ExecStartPre=/bin/mkdir -p /var/lib/kubelet/volumeplugins
 ExecStartPre=/bin/mkdir -p /opt/cni/bin
+ExecStartPre=/bin/bash -c 'nerdctl stop kubelet; nerdctl rm -f kubelet || exit 0'
 ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kubelet \\
     --privileged \\
     --pid host \\
@@ -190,7 +194,7 @@ ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kubelet \\
     --volume /etc/machine-id:/etc/machine-id \\
     \${CONTAINER_INFRA_PREFIX:-quay.io/poseidon/}kubelet:\${KUBE_TAG} \\
     \$KUBE_LOG_LEVEL \$KUBELET_API_SERVER \$KUBELET_ADDRESS \$KUBELET_PORT \$KUBELET_HOSTNAME \$KUBELET_ARGS'
-ExecStop=/bin/bash -c 'nerdctl stop kubelet; nerdctl rm -f kubelet'
+ExecStop=/bin/bash -c 'nerdctl stop kubelet; nerdctl rm -f kubelet || exit 0'
 Delegate=yes
 Restart=always
 RestartSec=10
@@ -207,6 +211,7 @@ EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
 EnvironmentFile=/etc/kubernetes/proxy
 ExecStartPre=/bin/mkdir -p /etc/kubernetes/
+ExecStartPre=/bin/bash -c 'nerdctl stop kube-proxy; nerdctl rm -f kube-proxy || exit 0'
 ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kube-proxy \\
     --privileged \\
     --net host \\
@@ -220,7 +225,7 @@ ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kube-proxy \\
     \${CONTAINER_INFRA_PREFIX:-registry.k8s.io/}kube-proxy:\${KUBE_TAG} \\
     kube-proxy \\
     \$KUBE_LOG_LEVEL \$KUBE_MASTER \$KUBE_PROXY_ARGS'
-ExecStop=/bin/bash -c 'nerdctl stop kube-proxy; nerdctl rm -f kube-proxy'
+ExecStop=/bin/bash -c 'nerdctl stop kube-proxy; nerdctl rm -f kube-proxy || exit 0'
 Delegate=yes
 Restart=always
 RestartSec=10

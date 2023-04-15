@@ -54,7 +54,7 @@ Wants=network-online.target
 [Service]
 EnvironmentFile=/etc/sysconfig/heat-params
 ExecStartPre=mkdir -p /var/lib/etcd
-ExecStartPre=-/usr/local/bin/nerdctl rm etcd
+ExecStartPre=/bin/bash -c 'nerdctl stop etcd; nerdctl rm -f etcd || exit 0'
 ExecStart=/usr/local/bin/nerdctl run \\
     --name etcd \\
     --volume /usr/share/ca-certificates/mozilla:/etc/ssl/certs:ro,z \\
@@ -64,7 +64,7 @@ ExecStart=/usr/local/bin/nerdctl run \\
     ${CONTAINER_INFRA_PREFIX:-"quay.io/coreos/"}etcd:${ETCD_TAG} \\
     /usr/local/bin/etcd \\
     --config-file /etc/etcd/etcd.conf.yaml
-ExecStop=/usr/local/bin/nerdctl stop etcd
+ExecStartPre=/bin/bash -c 'nerdctl stop etcd; nerdctl rm -f etcd || exit 0'
 TimeoutStartSec=10min
 
 [Install]
