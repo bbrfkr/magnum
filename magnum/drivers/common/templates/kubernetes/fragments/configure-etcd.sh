@@ -55,8 +55,8 @@ Wants=network-online.target
 [Service]
 EnvironmentFile=/etc/sysconfig/heat-params
 ExecStartPre=mkdir -p /var/lib/etcd
-ExecStartPre=-usr/local/bin/containerd rm etcd
-ExecStart=usr/local/bin/containerd run \\
+ExecStartPre=-/usr/local/bin/containerd rm etcd
+ExecStart=/usr/local/bin/containerd run \\
     --name etcd \\
     --volume /etc/pki/ca-trust/extracted/pem:/etc/ssl/certs:ro,z \\
     --volume /etc/etcd:/etc/etcd:ro,z \\
@@ -65,7 +65,7 @@ ExecStart=usr/local/bin/containerd run \\
     ${CONTAINER_INFRA_PREFIX:-"quay.io/coreos/"}etcd:${ETCD_TAG} \\
     /usr/local/bin/etcd \\
     --config-file /etc/etcd/etcd.conf.yaml
-ExecStop=usr/local/bin/containerd stop etcd
+ExecStop=/usr/local/bin/containerd stop etcd
 TimeoutStartSec=10min
 
 [Install]
