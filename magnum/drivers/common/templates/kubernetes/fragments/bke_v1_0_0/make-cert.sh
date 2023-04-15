@@ -193,6 +193,8 @@ echo -e "${KUBE_SERVICE_ACCOUNT_PRIVATE_KEY}" > ${cert_dir}/service_account_priv
 # Both etcd and kube user should have permission to access the certs and key.
 if [ -z "`cat /etc/group | grep kube_etcd`" ]; then
     groupadd kube_etcd
+    useradd etcd
+    useradd kube
     usermod -a -G kube_etcd etcd
     usermod -a -G kube_etcd kube
     chmod 550 "${cert_dir}"
