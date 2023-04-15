@@ -28,7 +28,13 @@ systemctl daemon-reload
 systemctl enable containerd
 systemctl start containerd
 
-apt update
-apt install -y podman
+wget -O /tmp/nerdctl-linux-amd64.tar.gz https://github.com/containerd/nerdctl/releases/download/v1.3.1/nerdctl-1.3.1-linux-amd64.tar.gz
+wget -O /tmp/nerdctl-linux-amd64.sha256 https://github.com/containerd/nerdctl/releases/download/v1.3.1/SHA256SUMS
+NERDCTL_TARBALL_SHA256=$(grep -e linux-amd64 /tmp/nerdctl-linux-amd64.sha256 | grep -v full | awk '{ print $1 }')
+if ! echo "${CONTAINERD_TARBALL_SHA256} /tmp/nerdctl-linux-amd64.tar.gz" | sha256sum -c - ; then
+    echo "ERROR nerdctl-linux-amd64.tar.gz computed checksum did NOT match, exiting."
+    exit 1
+fi
+tar xvfz /tmp/nerdctl-linux-amd64.tar.gz -C /usr/local/bin
 
 echo "END: install cri"

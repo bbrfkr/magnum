@@ -79,8 +79,8 @@ ExecStartPre=/bin/mkdir -p /var/lib/containerd
 ExecStartPre=/bin/mkdir -p /var/lib/docker
 ExecStartPre=/bin/mkdir -p /var/lib/kubelet/volumeplugins
 ExecStartPre=/bin/mkdir -p /opt/cni/bin
-ExecStartPre=-/usr/bin/podman rm kubelet
-ExecStart=/bin/bash -c '/usr/bin/podman run --name kubelet \\
+ExecStartPre=-/usr/local/bin/nerdctl rm kubelet
+ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kubelet \\
     --privileged \\
     --pid host \\
     --network host \\
@@ -107,7 +107,7 @@ ExecStart=/bin/bash -c '/usr/bin/podman run --name kubelet \\
     \${CONTAINER_INFRA_PREFIX}hyperkube:\${KUBE_TAG} \\
     kubelet \\
     \$KUBE_LOGTOSTDERR \$KUBE_LOG_LEVEL \$KUBELET_API_SERVER \$KUBELET_ADDRESS \$KUBELET_PORT \$KUBELET_HOSTNAME \$KUBELET_ARGS'
-ExecStop=-/usr/bin/podman stop kubelet
+ExecStop=-/usr/local/bin/nerdctl stop kubelet
 Delegate=yes
 Restart=always
 TimeoutStartSec=10min
@@ -124,8 +124,8 @@ EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
 EnvironmentFile=/etc/kubernetes/proxy
 ExecStartPre=/bin/mkdir -p /etc/kubernetes/
-ExecStartPre=-/usr/bin/podman rm kube-proxy
-ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-proxy \\
+ExecStartPre=-/usr/local/bin/nerdctl rm kube-proxy
+ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kube-proxy \\
     --privileged \\
     --net host \\
     --entrypoint /hyperkube \\
@@ -139,7 +139,7 @@ ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-proxy \\
     \${CONTAINER_INFRA_PREFIX}hyperkube:\${KUBE_TAG} \\
     kube-proxy \\
     \$KUBE_LOGTOSTDERR \$KUBE_LOG_LEVEL \$KUBE_MASTER \$KUBE_PROXY_ARGS'
-ExecStop=-/usr/bin/podman stop kube-proxy
+ExecStop=-/usr/local/bin/nerdctl stop kube-proxy
 Delegate=yes
 Restart=always
 TimeoutStartSec=10min

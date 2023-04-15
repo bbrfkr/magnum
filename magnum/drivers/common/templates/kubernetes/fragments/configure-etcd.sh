@@ -55,8 +55,8 @@ Wants=network-online.target
 [Service]
 EnvironmentFile=/etc/sysconfig/heat-params
 ExecStartPre=mkdir -p /var/lib/etcd
-ExecStartPre=-/usr/bin/podman rm etcd
-ExecStart=/usr/bin/podman run \\
+ExecStartPre=-/usr/local/bin/nerdctl rm etcd
+ExecStart=/usr/local/bin/nerdctl run \\
     --name etcd \\
     --volume /usr/share/ca-certificates/mozilla:/etc/ssl/certs:ro,z \\
     --volume /etc/etcd:/etc/etcd:ro,z \\
@@ -65,7 +65,7 @@ ExecStart=/usr/bin/podman run \\
     ${CONTAINER_INFRA_PREFIX:-"quay.io/coreos/"}etcd:${ETCD_TAG} \\
     /usr/local/bin/etcd \\
     --config-file /etc/etcd/etcd.conf.yaml
-ExecStop=/usr/bin/podman stop etcd
+ExecStop=/usr/local/bin/nerdctl stop etcd
 TimeoutStartSec=10min
 
 [Install]

@@ -73,8 +73,8 @@ EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
 EnvironmentFile=/etc/kubernetes/apiserver
 ExecStartPre=/bin/mkdir -p /etc/kubernetes/
-ExecStartPre=-/usr/bin/podman rm kube-apiserver
-ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-apiserver \\
+ExecStartPre=-/usr/local/bin/nerdctl rm kube-apiserver
+ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kube-apiserver \\
     --net host \\
     --volume /etc/kubernetes:/etc/kubernetes:ro,z \\
     --volume /usr/lib/os-release:/etc/os-release:ro \\
@@ -84,7 +84,7 @@ ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-apiserver \\
     \${CONTAINER_INFRA_PREFIX:-registry.k8s.io/}kube-apiserver:${KUBE_TAG} \\
     kube-apiserver \\
     \$KUBE_LOG_LEVEL \$KUBE_ETCD_SERVERS \$KUBE_API_ADDRESS \$KUBELET_PORT \$KUBE_SERVICE_ADDRESSES \$KUBE_ADMISSION_CONTROL \$KUBE_API_ARGS'
-ExecStop=-/usr/bin/podman stop kube-apiserver
+ExecStop=-/usr/local/bin/nerdctl stop kube-apiserver
 Delegate=yes
 Restart=always
 RestartSec=10
@@ -101,8 +101,8 @@ EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
 EnvironmentFile=/etc/kubernetes/controller-manager
 ExecStartPre=/bin/mkdir -p /etc/kubernetes/
-ExecStartPre=-/usr/bin/podman rm kube-controller-manager
-ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-controller-manager \\
+ExecStartPre=-/usr/local/bin/nerdctl rm kube-controller-manager
+ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kube-controller-manager \\
     --net host \\
     --volume /etc/kubernetes:/etc/kubernetes:ro,z \\
     --volume /usr/lib/os-release:/etc/os-release:ro \\
@@ -113,7 +113,7 @@ ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-controller-manager \\
     kube-controller-manager \\
     --secure-port=0 \\
     \$KUBE_LOG_LEVEL \$KUBE_MASTER \$KUBE_CONTROLLER_MANAGER_ARGS'
-ExecStop=-/usr/bin/podman stop kube-controller-manager
+ExecStop=-/usr/local/bin/nerdctl stop kube-controller-manager
 Delegate=yes
 Restart=always
 RestartSec=10
@@ -130,8 +130,8 @@ EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
 EnvironmentFile=/etc/kubernetes/scheduler
 ExecStartPre=/bin/mkdir -p /etc/kubernetes/
-ExecStartPre=-/usr/bin/podman rm kube-scheduler
-ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-scheduler \\
+ExecStartPre=-/usr/local/bin/nerdctl rm kube-scheduler
+ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kube-scheduler \\
     --net host \\
     --volume /etc/kubernetes:/etc/kubernetes:ro,z \\
     --volume /usr/lib/os-release:/etc/os-release:ro \\
@@ -141,7 +141,7 @@ ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-scheduler \\
     \${CONTAINER_INFRA_PREFIX:-registry.k8s.io/}kube-scheduler:\${KUBE_TAG} \\
     kube-scheduler \\
     \$KUBE_LOG_LEVEL \$KUBE_MASTER \$KUBE_SCHEDULER_ARGS'
-ExecStop=-/usr/bin/podman stop kube-scheduler
+ExecStop=-/usr/local/bin/nerdctl stop kube-scheduler
 Delegate=yes
 Restart=always
 RestartSec=10
@@ -168,8 +168,8 @@ ExecStartPre=/bin/mkdir -p /var/lib/containerd
 ExecStartPre=/bin/mkdir -p /var/lib/docker
 ExecStartPre=/bin/mkdir -p /var/lib/kubelet/volumeplugins
 ExecStartPre=/bin/mkdir -p /opt/cni/bin
-ExecStartPre=-/usr/bin/podman rm kubelet
-ExecStart=/bin/bash -c '/usr/bin/podman run --name kubelet \\
+ExecStartPre=-/usr/local/bin/nerdctl rm kubelet
+ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kubelet \\
     --privileged \\
     --pid host \\
     --network host \\
@@ -195,7 +195,7 @@ ExecStart=/bin/bash -c '/usr/bin/podman run --name kubelet \\
     \${CONTAINER_INFRA_PREFIX:-quay.io/poseidon/}kubelet:\${KUBE_TAG} \\
     kubelet \\
     \$KUBE_LOG_LEVEL \$KUBELET_API_SERVER \$KUBELET_ADDRESS \$KUBELET_PORT \$KUBELET_HOSTNAME \$KUBELET_ARGS'
-ExecStop=-/usr/bin/podman stop kubelet
+ExecStop=-/usr/local/bin/nerdctl stop kubelet
 Delegate=yes
 Restart=always
 RestartSec=10
@@ -212,8 +212,8 @@ EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
 EnvironmentFile=/etc/kubernetes/proxy
 ExecStartPre=/bin/mkdir -p /etc/kubernetes/
-ExecStartPre=-/usr/bin/podman rm kube-proxy
-ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-proxy \\
+ExecStartPre=-/usr/local/bin/nerdctl rm kube-proxy
+ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kube-proxy \\
     --privileged \\
     --net host \\
     --volume /etc/kubernetes:/etc/kubernetes:ro,z \\
@@ -226,7 +226,7 @@ ExecStart=/bin/bash -c '/usr/bin/podman run --name kube-proxy \\
     \${CONTAINER_INFRA_PREFIX:-registry.k8s.io/}kube-proxy:\${KUBE_TAG} \\
     kube-proxy \\
     \$KUBE_LOG_LEVEL \$KUBE_MASTER \$KUBE_PROXY_ARGS'
-ExecStop=-/usr/bin/podman stop kube-proxy
+ExecStop=-/usr/local/bin/nerdctl stop kube-proxy
 Delegate=yes
 Restart=always
 RestartSec=10
