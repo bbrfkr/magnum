@@ -41,7 +41,6 @@ if [ -n "$ETCD_VOLUME_SIZE" ] && [ "$ETCD_VOLUME_SIZE" -gt 0 ]; then
     mkdir -p /var/lib/etcd
     echo "${device_path} /var/lib/etcd xfs defaults 0 0" >> /etc/fstab
     mount -a
-    chown -R etcd.etcd /var/lib/etcd
     chmod 755 /var/lib/etcd
 
 fi
