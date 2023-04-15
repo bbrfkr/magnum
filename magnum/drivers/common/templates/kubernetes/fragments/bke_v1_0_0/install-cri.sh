@@ -28,4 +28,7 @@ systemctl daemon-reload
 systemctl enable containerd
 systemctl start containerd
 
+apt update
+apt install -y podman
+
 echo "END: install cri"
