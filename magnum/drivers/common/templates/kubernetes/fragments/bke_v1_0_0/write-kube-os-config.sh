@@ -2,7 +2,7 @@ set +x
 . /etc/sysconfig/heat-params
 set -x
 
-$ssh_cmd mkdir -p /etc/kubernetes/
+mkdir -p /etc/kubernetes/
 
 if [ -n "${TRUST_ID}" ]; then
     KUBE_OS_CLOUD_CONFIG=/etc/kubernetes/cloud-config
@@ -34,11 +34,11 @@ EOF
     fi
 
     # backwards compatibility, some apps may expect this file from previous magnum versions.
-    $ssh_cmd cp ${KUBE_OS_CLOUD_CONFIG} /etc/kubernetes/kube_openstack_config
+    cp ${KUBE_OS_CLOUD_CONFIG} /etc/kubernetes/kube_openstack_config
 
     # Append additional networking config to config file provided to openstack
     # cloud controller manager (not supported by in-tree Cinder).
-    $ssh_cmd cp ${KUBE_OS_CLOUD_CONFIG} ${KUBE_OS_CLOUD_CONFIG}-occm
+    cp ${KUBE_OS_CLOUD_CONFIG} ${KUBE_OS_CLOUD_CONFIG}-occm
     cat >> ${KUBE_OS_CLOUD_CONFIG}-occm <<EOF
 [Networking]
 internal-network-name=$CLUSTER_NETWORK_NAME

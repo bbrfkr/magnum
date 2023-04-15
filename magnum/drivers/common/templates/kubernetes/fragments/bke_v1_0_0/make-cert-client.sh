@@ -20,9 +20,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-
-ssh_cmd="ssh -F /srv/magnum/.ssh/config root@localhost"
-
 if [ "$TLS_DISABLED" == "True" ]; then
     exit 0
 fi
@@ -80,9 +77,9 @@ EOF
         $MAGNUM_URL/certificates/$CLUSTER_UUID | python -c 'import sys, json; print(json.load(sys.stdin)["pem"])' >> $CA_CERT
 
     # Generate client's private key and csr
-    $ssh_cmd openssl genrsa -out "${_KEY}" 4096
+    openssl genrsa -out "${_KEY}" 4096
     chmod 400 "${_KEY}"
-    $ssh_cmd openssl req -new -days 1000 \
+    openssl req -new -days 1000 \
             -key "${_KEY}" \
             -out "${_CSR}" \
             -reqexts req_ext \

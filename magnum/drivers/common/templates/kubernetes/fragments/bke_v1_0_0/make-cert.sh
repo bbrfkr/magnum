@@ -19,8 +19,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-ssh_cmd="ssh -F /srv/magnum/.ssh/config root@localhost"
-
 if [ "$TLS_DISABLED" == "True" ]; then
     exit 0
 fi
@@ -116,9 +114,9 @@ EOF
         $MAGNUM_URL/certificates/$CLUSTER_UUID"?ca_cert_type="${_CA_CERT_TYPE} | python -c 'import sys, json; print(json.load(sys.stdin)["pem"])' > ${CA_CERT}
 
     # Generate server's private key and csr
-    $ssh_cmd openssl genrsa -out "${_KEY}" 4096
+    openssl genrsa -out "${_KEY}" 4096
     chmod 400 "${_KEY}"
-    $ssh_cmd openssl req -new -days 1000 \
+    openssl req -new -days 1000 \
             -key "${_KEY}" \
             -out "${_CSR}" \
             -reqexts req_ext \
@@ -194,17 +192,17 @@ echo -e "${KUBE_SERVICE_ACCOUNT_PRIVATE_KEY}" > ${cert_dir}/service_account_priv
 # Common certs and key are created for both etcd and kubernetes services.
 # Both etcd and kube user should have permission to access the certs and key.
 if [ -z "`cat /etc/group | grep kube_etcd`" ]; then
-    $ssh_cmd groupadd kube_etcd
-    $ssh_cmd usermod -a -G kube_etcd etcd
-    $ssh_cmd usermod -a -G kube_etcd kube
-    $ssh_cmd chmod 550 "${cert_dir}"
-    $ssh_cmd chown -R kube:kube_etcd "${cert_dir}"
-    $ssh_cmd chmod 440 "$cert_dir/server.key"
+    groupadd kube_etcd
+    usermod -a -G kube_etcd etcd
+    usermod -a -G kube_etcd kube
+    chmod 550 "${cert_dir}"
+    chown -R kube:kube_etcd "${cert_dir}"
+    chmod 440 "$cert_dir/server.key"
 fi
 
 # Create certs for etcd
 cert_dir=/etc/etcd/certs
-$ssh_cmd mkdir -p "$cert_dir"
+mkdir -p "$cert_dir"
 CA_CERT=${cert_dir}/ca.crt
 
 cat > ${cert_dir}/server.conf <<EOF
@@ -223,12 +221,12 @@ generate_certificates server ${cert_dir}/server.conf etcd
 generate_certificates admin ${cert_dir}/server.conf etcd
 
 if [ -z "`cat /etc/group | grep kube_etcd`" ]; then
-    $ssh_cmd chown -R etcd:kube_etcd "${cert_dir}"
+    chown -R etcd:kube_etcd "${cert_dir}"
 fi
 
 # Create certs for front-proxy
 cert_dir=/etc/kubernetes/certs/front-proxy
-$ssh_cmd mkdir -p "$cert_dir"
+mkdir -p "$cert_dir"
 CA_CERT=${cert_dir}/ca.crt
 
 cat > ${cert_dir}/server.conf <<EOF
@@ -247,5 +245,5 @@ generate_certificates server ${cert_dir}/server.conf front-proxy
 generate_certificates admin ${cert_dir}/server.conf front-proxy
 
 if [ -z "`cat /etc/group | grep kube_etcd`" ]; then
-    $ssh_cmd chown -R kube:kube_etcd "${cert_dir}"
+    chown -R kube:kube_etcd "${cert_dir}"
 fi

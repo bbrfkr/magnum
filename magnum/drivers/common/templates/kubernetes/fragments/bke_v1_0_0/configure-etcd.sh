@@ -2,8 +2,6 @@
 
 set -x
 
-ssh_cmd="ssh -F /srv/magnum/.ssh/config root@localhost"
-
 if [ ! -z "$HTTP_PROXY" ]; then
     export HTTP_PROXY
 fi
@@ -20,13 +18,13 @@ if [ -n "$ETCD_VOLUME_SIZE" ] && [ "$ETCD_VOLUME_SIZE" -gt 0 ]; then
 
     attempts=60
     while [ ${attempts} -gt 0 ]; do
-        device_name=$($ssh_cmd ls /dev/disk/by-id | grep ${ETCD_VOLUME:0:20} | head -n1)
+        device_name=$(ls /dev/disk/by-id | grep ${ETCD_VOLUME:0:20} | head -n1)
         if [ -n "${device_name}" ]; then
             break
         fi
         echo "waiting for disk device"
         sleep 0.5
-        $ssh_cmd udevadm trigger
+        udevadm trigger
         let attempts--
     done
 
@@ -36,20 +34,19 @@ if [ -n "$ETCD_VOLUME_SIZE" ] && [ "$ETCD_VOLUME_SIZE" -gt 0 ]; then
     fi
 
     device_path=/dev/disk/by-id/${device_name}
-    fstype=$($ssh_cmd blkid -s TYPE -o value ${device_path} || echo "")
+    fstype=$(blkid -s TYPE -o value ${device_path} || echo "")
     if [ "${fstype}" != "xfs" ]; then
-        $ssh_cmd mkfs.xfs -f ${device_path}
+        mkfs.xfs -f ${device_path}
     fi
-    $ssh_cmd mkdir -p /var/lib/etcd
+    mkdir -p /var/lib/etcd
     echo "${device_path} /var/lib/etcd xfs defaults 0 0" >> /etc/fstab
-    $ssh_cmd mount -a
-    $ssh_cmd chown -R etcd.etcd /var/lib/etcd
-    $ssh_cmd chmod 755 /var/lib/etcd
+    mount -a
+    chown -R etcd.etcd /var/lib/etcd
+    chmod 755 /var/lib/etcd
 
 fi
 
-if [ "$(echo $USE_PODMAN | tr '[:upper:]' '[:lower:]')" == "true" ]; then
-    cat > /etc/systemd/system/etcd.service <<EOF
+cat > /etc/systemd/system/etcd.service <<EOF
 [Unit]
 Description=Etcd server
 After=network-online.target
@@ -58,8 +55,8 @@ Wants=network-online.target
 [Service]
 EnvironmentFile=/etc/sysconfig/heat-params
 ExecStartPre=mkdir -p /var/lib/etcd
-ExecStartPre=-/bin/podman rm etcd
-ExecStart=/bin/podman run \\
+ExecStartPre=-/bin/containerd rm etcd
+ExecStart=/bin/containerd run \\
     --name etcd \\
     --volume /etc/pki/ca-trust/extracted/pem:/etc/ssl/certs:ro,z \\
     --volume /etc/etcd:/etc/etcd:ro,z \\
@@ -68,21 +65,12 @@ ExecStart=/bin/podman run \\
     ${CONTAINER_INFRA_PREFIX:-"quay.io/coreos/"}etcd:${ETCD_TAG} \\
     /usr/local/bin/etcd \\
     --config-file /etc/etcd/etcd.conf.yaml
-ExecStop=/bin/podman stop etcd
+ExecStop=/bin/containerd stop etcd
 TimeoutStartSec=10min
 
 [Install]
 WantedBy=multi-user.target
 EOF
-else
-    _prefix=${CONTAINER_INFRA_PREFIX:-"docker.io/openstackmagnum/"}
-    $ssh_cmd atomic install \
-    --system-package no \
-    --system \
-    --storage ostree \
-    --name=etcd ${_prefix}etcd:${ETCD_TAG}
-fi
-
 
 if [ -z "$KUBE_NODE_IP" ]; then
     # FIXME(yuanying): Set KUBE_NODE_IP correctly
