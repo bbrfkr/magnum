@@ -8,7 +8,7 @@ set -x
 # install containerd
 wget -O /tmp/containerd-linux-amd64.tar.gz "https://github.com/containerd/containerd/releases/download/v1.7.0/containerd-1.7.0-linux-amd64.tar.gz"
 wget -O /tmp/containerd-linux-amd64.sha256sum "https://github.com/containerd/containerd/releases/download/v1.7.0/containerd-1.7.0-linux-amd64.tar.gz.sha256sum"
-CONTAINERD_TARBALL_SHA256=$(cat /tmp/nerdctl-linux-amd64.sha256sum | awk '{ print $1 }')
+CONTAINERD_TARBALL_SHA256=$(cat /tmp/containerd-linux-amd64.sha256sum | awk '{ print $1 }')
 if ! echo "${CONTAINERD_TARBALL_SHA256} /tmp/containerd-linux-amd64.tar.gz" | sha256sum -c - ; then
     echo "ERROR containerd-linux-amd64.tar.gz computed checksum did NOT match, exiting."
     exit 1
@@ -34,7 +34,7 @@ if ! echo "${CNI_TARBALL_SHA256} /tmp/cni-plugins-linux-amd64.tar.gz" | sha256su
     exit 1
 fi
 mkdir -p /opt/cni/bin
-tar xzvf /tmp/containerd-linux-amd64.tar.gz -C /opt/cni/bin/ --no-same-owner --touch --no-same-permissions
+tar xzvf /tmp/cni-plugins-linux-amd64.tar.gz -C /opt/cni/bin/ --no-same-owner --touch --no-same-permissions
 
 # enable containerd
 curl -o /lib/systemd/system/containerd.service https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
