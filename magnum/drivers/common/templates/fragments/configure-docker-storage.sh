@@ -7,17 +7,17 @@ if [ -n "$DOCKER_VOLUME_SIZE" ] && [ "$DOCKER_VOLUME_SIZE" -gt 0 ]; then
         # FIXME(yuanying): Use ephemeral disk for docker storage
         # Currently Ironic doesn't support cinder volumes,
         # so we must use preserved ephemeral disk instead of a cinder volume.
-        device_path=$(/bin/containerdreadlink -f /dev/disk/by-label/ephemeral0)
+        device_path=$(readlink -f /dev/disk/by-label/ephemeral0)
     else
         attempts=60
         while [ ${attempts} -gt 0 ]; do
-            device_name=$(/bin/containerdls /dev/disk/by-id | grep ${DOCKER_VOLUME:0:20} | head -n1)
+            device_name=$(ls /dev/disk/by-id | grep ${DOCKER_VOLUME:0:20} | head -n1)
             if [ -n "${device_name}" ]; then
                 break
             fi
             echo "waiting for disk device"
             sleep 0.5
-            /bin/containerdudevadm trigger
+            udevadm trigger
             let attempts--
         done
 

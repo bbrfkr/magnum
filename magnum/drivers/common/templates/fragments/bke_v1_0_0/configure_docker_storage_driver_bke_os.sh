@@ -1,8 +1,8 @@
-runtime=${CONTAINER_RUNTIME}
+runtime="containerd"
 storage_dir="/var/lib/containerd"
 
 clear_docker_storage () {
-    # stop docker
+    # stop containerd
     systemctl stop ${runtime}
     # clear storage graph
     rm -rf ${storage_dir}
