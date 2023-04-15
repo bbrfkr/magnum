@@ -28,13 +28,4 @@ systemctl daemon-reload
 systemctl enable containerd
 systemctl start containerd
 
-curl -o /tmp/runc.amd64 https://github.com/opencontainers/runc/releases/download/v1.1.6/runc.amd64
-curl -o /tmp/runc.sha256sum https://github.com/opencontainers/runc/releases/download/v1.1.6/runc.sha256sum
-RUNC_SHA256=$(cat /tmp/runc.sha256sum)
-if ! echo "${RUNC_SHA256} /tmp/runc.amd64" | sha256sum -c - ; then
-    echo "ERROR runc.amd64 computed checksum did NOT match, exiting."
-    exit 1
-fi
-install -m 755 runc.amd64 /usr/local/sbin/runc
-
 echo "END: install cri"
