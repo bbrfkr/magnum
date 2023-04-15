@@ -8,7 +8,7 @@ set -x
 
 mkdir -p /srv/magnum/bin/
 
-curl -o /srv/magnum/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v${KUBE_TAG}/bin/linux/amd64/kubectl
+curl -o /srv/magnum/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBE_TAG}/bin/linux/amd64/kubectl
 chmod +x /srv/magnum/bin/kubectl
 
 echo "INFO Installed kubectl."
