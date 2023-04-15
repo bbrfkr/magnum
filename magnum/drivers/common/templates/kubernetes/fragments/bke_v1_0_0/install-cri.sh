@@ -22,7 +22,7 @@ if ! echo "${CONTAINERD_TARBALL_SHA256} /tmp/cri-containerd.tar.gz" | sha256sum 
 fi
 tar xzvf /tmp/cri-containerd.tar.gz -C / --no-same-owner --touch --no-same-permissions
 
-curl -o /usr/local/lib/systemd/system/containerd.service https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
+curl -o /lib/systemd/system/containerd.service https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
 
 systemctl daemon-reload
 systemctl enable containerd
