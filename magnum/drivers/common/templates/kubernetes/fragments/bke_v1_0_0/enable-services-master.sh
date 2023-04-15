@@ -16,7 +16,7 @@ echo "starting services"
 container_runtime_service="containerd"
 
 for action in enable restart; do
-    for service in etcd ${container_runtime_service} kube-apiserver kube-controller-manager kube-scheduler kubelet kube-proxy; do
+    for service in ${container_runtime_service} etcd kube-apiserver kube-controller-manager kube-scheduler kubelet kube-proxy; do
         echo "$action service $service"
         systemctl $action $service
     done
