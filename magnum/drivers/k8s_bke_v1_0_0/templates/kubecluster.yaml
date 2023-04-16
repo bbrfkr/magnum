@@ -460,21 +460,21 @@ parameters:
     description:
       tag of the k8s containers used to provision the kubernetes cluster
       https://github.com/kubernetes/kubernetes/releases
-    default: v1.23.3-rancher1
+    default: v1.26.3
 
   master_kube_tag:
     type: string
     description:
       tag of the k8s containers used to provision the kubernetes cluster
       https://github.com/kubernetes/kubernetes/releases
-    default: v1.23.3-rancher1
+    default: v1.26.3
 
   minion_kube_tag:
     type: string
     description:
       tag of the k8s containers used to provision the kubernetes cluster
       https://github.com/kubernetes/kubernetes/releases
-    default: v1.23.3-rancher1
+    default: v1.26.3
 
   cloud_provider_tag:
     type: string
@@ -486,6 +486,7 @@ parameters:
   cloud_provider_enabled:
     type: boolean
     description: Enable or disable the openstack kubernetes cloud provider
+    default: true
 
   etcd_tag:
     type: string
@@ -1372,13 +1373,10 @@ resources:
           - "\n"
           -
             - "#!/bin/bash"
-            # - "source /etc/bashrc"
-            # - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/kube-apiserver-to-kubelet-role.sh
-            # - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/core-dns-service.sh
-            # - if:
-            #     - calico_v3_3
-            #     - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/calico-service-v3-3-x.sh
-            #     - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/calico-service.sh
+            - "source /etc/bashrc"
+            - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/kube-apiserver-to-kubelet-role.sh
+            - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/core-dns-service.sh
+            - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/calico-service.sh
             # - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/flannel-service.sh
             # - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-helm-tiller.sh
             # - str_replace:

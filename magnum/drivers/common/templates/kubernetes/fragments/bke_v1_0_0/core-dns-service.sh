@@ -6,7 +6,7 @@ printf "Starting to run ${step}\n"
 _dns_prefix=${CONTAINER_INFRA_PREFIX:-docker.io/coredns/}
 _autoscaler_prefix=${CONTAINER_INFRA_PREFIX:-gcr.io/google_containers/}
 
-CORE_DNS=/srv/magnum/kubernetes/manifests/kube-coredns.yaml
+CORE_DNS=/etc/kubernetes/manifests/kube-coredns.yaml
 [ -f ${CORE_DNS} ] || {
     echo "Writing File: $CORE_DNS"
     mkdir -p $(dirname ${CORE_DNS})
@@ -123,7 +123,7 @@ spec:
         - effect: NoExecute
           operator: Exists
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
       containers:
       - name: coredns
         image: ${_dns_prefix}coredns:${COREDNS_TAG}
@@ -274,8 +274,6 @@ spec:
     metadata:
       labels:
         k8s-app: kube-dns-autoscaler
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       priorityClassName: system-cluster-critical
       containers:

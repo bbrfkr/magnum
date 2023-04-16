@@ -50,7 +50,7 @@ subjects:
 EOF
 
 # Create an admin user and give it the cluster role.
-ADMIN_RBAC=/srv/magnum/kubernetes/kubernetes-admin-rbac.yaml
+ADMIN_RBAC=/etc/kubernetes/manifests/kubernetes-admin-rbac.yaml
 
 [ -f ${ADMIN_RBAC} ] || {
     echo "Writing File: $ADMIN_RBAC"
@@ -78,67 +78,6 @@ EOF
 }
 kubectl apply --validate=false -f ${ADMIN_RBAC}
 
-POD_SECURITY_POLICIES=/srv/magnum/kubernetes/podsecuritypolicies.yaml
-# Pod Security Policies
-[ -f ${POD_SECURITY_POLICIES} ] || {
-    echo "Writing File: $POD_SECURITY_POLICIES"
-    mkdir -p $(dirname ${POD_SECURITY_POLICIES})
-    cat > ${POD_SECURITY_POLICIES} <<EOF
----
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  name: magnum.privileged
-  annotations:
-    kubernetes.io/description: 'privileged allows full unrestricted access to
-      pod features, as if the PodSecurityPolicy controller was not enabled.'
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
-  labels:
-    kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: Reconcile
-spec:
-  privileged: true
-  allowPrivilegeEscalation: true
-  allowedCapabilities:
-  - '*'
-  volumes:
-  - '*'
-  hostNetwork: true
-  hostPorts:
-  - min: 0
-    max: 65535
-  hostIPC: true
-  hostPID: true
-  runAsUser:
-    rule: 'RunAsAny'
-  seLinux:
-    rule: 'RunAsAny'
-  supplementalGroups:
-    rule: 'RunAsAny'
-  fsGroup:
-    rule: 'RunAsAny'
-  readOnlyRootFilesystem: false
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: magnum:podsecuritypolicy:privileged
-  labels:
-    kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: Reconcile
-rules:
-- apiGroups:
-  - policy
-  resourceNames:
-  - magnum.privileged
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
-EOF
-}
-kubectl apply -f ${POD_SECURITY_POLICIES}
-
 # Add the openstack trustee as a secret under kube-system
 kubectl -n kube-system create secret generic os-trustee \
     --from-literal=os-authURL=${AUTH_URL} \
@@ -146,12 +85,12 @@ kubectl -n kube-system create secret generic os-trustee \
     --from-literal=os-trusteeID=${TRUSTEE_USER_ID} \
     --from-literal=os-trusteePassword=${TRUSTEE_PASSWORD} \
     --from-literal=os-region=${REGION_NAME} \
-    --from-file=os-certAuthority=/etc/kubernetes/ca-bundle.crt
+    --from-file=os-certAuthority=/etc/ssl/certs/ca-certificates.crt
 
 #TODO: add heat variables for master count to determine leaderelect true/False ?
 if [ "$(echo "${CLOUD_PROVIDER_ENABLED}" | tr '[:upper:]' '[:lower:]')" = "true" ]; then
     occm_image="${CONTAINER_INFRA_PREFIX:-docker.io/k8scloudprovider/}openstack-cloud-controller-manager:${CLOUD_PROVIDER_TAG}"
-    OCCM=/srv/magnum/kubernetes/openstack-cloud-controller-manager.yaml
+    OCCM=/etc/kubernetes/manifests/openstack-cloud-controller-manager.yaml
 
     [ -f ${OCCM} ] || {
         echo "Writing File: ${OCCM}"

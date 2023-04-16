@@ -15,7 +15,7 @@ auth-url=$AUTH_URL
 user-id=$TRUSTEE_USER_ID
 password=$TRUSTEE_PASSWORD
 trust-id=$TRUST_ID
-ca-file=/etc/kubernetes/ca-bundle.crt
+ca-file=/etc/ssl/certs/ca-certificates.crt
 [LoadBalancer]
 use-octavia=$OCTAVIA_ENABLED
 subnet-id=$CLUSTER_SUBNET

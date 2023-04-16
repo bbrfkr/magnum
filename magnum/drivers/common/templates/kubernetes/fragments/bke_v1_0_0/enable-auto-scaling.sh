@@ -179,7 +179,7 @@ EOF
         sleep 5
     done
 
-    kubectl create secret generic ca-bundle --from-file=/etc/kubernetes/ca-bundle.crt -n kube-system
+    kubectl create secret generic ca-bundle --from-file=/etc/ssl/certs/ca-certificates.crt -n kube-system
 
     cat <<EOF | kubectl apply -f -
 ---
@@ -197,7 +197,7 @@ stringData:
     password=$TRUSTEE_PASSWORD
     trust-id=$TRUST_ID
     region=$REGION_NAME
-    ca-file=/etc/kubernetes/ca-bundle.crt
+    ca-file=/etc/ssl/certs/ca-certificates.crt
 EOF
 
     kubectl apply -f ${AUTOSCALER_DEPLOY}

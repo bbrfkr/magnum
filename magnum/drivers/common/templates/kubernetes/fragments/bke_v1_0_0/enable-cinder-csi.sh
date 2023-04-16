@@ -346,7 +346,7 @@ spec:
               mountPath: /etc/config
               readOnly: true
             - name: cacert
-              mountPath: /etc/kubernetes/ca-bundle.crt
+              mountPath: /etc/ssl/certs/ca-certificates.crt
               readOnly: true
       volumes:
         - name: socket-dir
@@ -356,7 +356,7 @@ spec:
             secretName: cinder-csi-cloud-config
         - name: cacert
           hostPath:
-            path: /etc/kubernetes/ca-bundle.crt
+            path: /etc/ssl/certs/ca-certificates.crt
             type: File
 ---
 # This YAML defines all API objects to create RBAC roles for csi node plugin.
@@ -479,7 +479,7 @@ spec:
               mountPath: /etc/config
               readOnly: true
             - name: cacert
-              mountPath: /etc/kubernetes/ca-bundle.crt
+              mountPath: /etc/ssl/certs/ca-certificates.crt
               readOnly: true
       volumes:
         - name: socket-dir
@@ -506,7 +506,7 @@ spec:
             secretName: cinder-csi-cloud-config
         - name: cacert
           hostPath:
-            path: /etc/kubernetes/ca-bundle.crt
+            path: /etc/ssl/certs/ca-certificates.crt
             type: File
 ---
 apiVersion: storage.k8s.io/v1
@@ -543,7 +543,7 @@ stringData:
     password=$TRUSTEE_PASSWORD
     trust-id=$TRUST_ID
     region=$REGION_NAME
-    ca-file=/etc/kubernetes/ca-bundle.crt
+    ca-file=/etc/ssl/certs/ca-certificates.crt
 EOF
 
     kubectl apply -f ${CINDER_CSI_DEPLOY}

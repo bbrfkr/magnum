@@ -307,7 +307,7 @@ data:
       password: ${TRUSTEE_PASSWORD}
       trust-id: ${TRUST_ID}
       region: ${REGION_NAME}
-      ca-file: /etc/kubernetes/ca-bundle.crt
+      ca-file: /etc/ssl/certs/ca-certificates.crt
 
 ---
 apiVersion: apps/v1

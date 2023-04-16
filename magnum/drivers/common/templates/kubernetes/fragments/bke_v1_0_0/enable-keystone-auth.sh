@@ -135,7 +135,7 @@ spec:
             - --sync-configmap-name
             - keystone-sync-policy
             - --keystone-ca-file
-            - /etc/kubernetes/ca-bundle.crt
+            - /etc/ssl/certs/ca-certificates.crt
             - --listen
             - 127.0.0.1:8443
           volumeMounts:
