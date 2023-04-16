@@ -17,11 +17,10 @@ if [ "$NETWORK_DRIVER" = "calico" ]; then
     wget -O /tmp/calico-custom-resources.yaml ${CALICO_MANIFEST_URL}
     sed -i "s@cidr: .*@cidr: ${CALICO_IPV4POOL}@g" /tmp/calico-custom-resources.yaml
 
-    kubectl get ns | grep tigera-operator
-    if [ $? -eq 0 ]; then
-      kubectl replace -f ${CALICO_TIGERA_MANIFEST_URL}
-    else
+    if ! (kubectl get ns | grep tigera-operator); then
       kubectl create -f ${CALICO_TIGERA_MANIFEST_URL}
+    else
+      kubectl replace -f ${CALICO_TIGERA_MANIFEST_URL}
     fi
     kubectl apply -f /tmp/calico-custom-resources.yaml
 fi
