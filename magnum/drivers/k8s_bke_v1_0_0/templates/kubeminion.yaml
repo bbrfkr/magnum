@@ -454,13 +454,13 @@ resources:
             - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/install-clients.sh
             - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/make-cert-client.sh
             # - get_file: ../../common/templates/fragments/bke_v1_0_0/configure-docker-registry.sh
-            # - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/configure-kubernetes-minion.sh
-            # - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/add-proxy.sh
-            # - str_replace:
-            #     template: {get_file: ../../common/templates/fragments/bke_v1_0_0/configure-docker-storage.sh}
-            #     params:
-            #       $configure_docker_storage_driver: {get_file: ../../common/templates/fragments/bke_v1_0_0/configure_docker_storage_driver_fedora_coreos.sh}
-            # - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-services-minion.sh
+            - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/configure-kubernetes-minion.sh
+            - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/add-proxy.sh
+            - str_replace:
+                template: {get_file: ../../common/templates/fragments/bke_v1_0_0/configure-docker-storage.sh}
+                params:
+                  $configure_docker_storage_driver: {get_file: ../../common/templates/fragments/bke_v1_0_0/configure_docker_storage_driver_bke_os.sh}
+            - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-services-minion.sh
             # - get_file: ../../common/templates/fragments/bke_v1_0_0/enable-docker-registry.sh
 
   node_config_deployment:

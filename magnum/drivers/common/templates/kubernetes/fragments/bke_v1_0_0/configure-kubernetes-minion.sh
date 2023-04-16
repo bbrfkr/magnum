@@ -3,8 +3,6 @@ set +x
 set -x
 set -e
 
-ssh_cmd="ssh -F /srv/magnum/.ssh/config root@localhost"
-
 echo "configuring kubernetes (minion)"
 
 if [ ! -z "$HTTP_PROXY" ]; then
@@ -19,22 +17,14 @@ if [ ! -z "$NO_PROXY" ]; then
     export NO_PROXY
 fi
 
-$ssh_cmd rm -rf /etc/cni/net.d/*
-$ssh_cmd rm -rf /var/lib/cni/*
-$ssh_cmd rm -rf /opt/cni/*
-$ssh_cmd mkdir -p /opt/cni
-$ssh_cmd mkdir -p /opt/cni/bin
-$ssh_cmd mkdir -p /etc/cni/net.d/
-_addtl_mounts=',{"type":"bind","source":"/opt/cni","destination":"/opt/cni","options":["bind","rw","slave","mode=777"]},{"type":"bind","source":"/var/lib/docker","destination":"/var/lib/docker","options":["bind","rw","slave","mode=755"]}'
-
 if [ "$NETWORK_DRIVER" = "calico" ]; then
     echo "net.ipv4.conf.all.rp_filter = 1" >> /etc/sysctl.conf
     # NOTE(flwang): The default value for vm.max_map_count is too low, update
     # it to 262144 to meet the minium requirement of Elasticsearch
     echo "vm.max_map_count = 262144" >> /etc/sysctl.conf
 
-    $ssh_cmd sysctl -p
-    if [ "$($ssh_cmd systemctl status NetworkManager.service | grep -o "Active: active")" = "Active: active" ]; then
+    sysctl -p
+    if [ "$(systemctl status NetworkManager.service | grep -o "Active: active")" = "Active: active" ]; then
         CALICO_NM=/etc/NetworkManager/conf.d/calico.conf
         [ -f ${CALICO_NM} ] || {
         echo "Writing File: $CALICO_NM"
@@ -44,16 +34,14 @@ if [ "$NETWORK_DRIVER" = "calico" ]; then
 unmanaged-devices=interface-name:cali*;interface-name:tunl*
 EOF
 }
-        $ssh_cmd systemctl restart NetworkManager
+        systemctl restart NetworkManager
     fi
 elif [ "$NETWORK_DRIVER" = "flannel" ]; then
-    $ssh_cmd modprobe vxlan
+    modprobe vxlan
     echo "vxlan" > /etc/modules-load.d/vxlan.conf
 fi
 
-mkdir -p /srv/magnum/kubernetes/
 cat > /etc/kubernetes/config <<EOF
-KUBE_LOGTOSTDERR="--logtostderr=true"
 KUBE_LOG_LEVEL="--v=3"
 EOF
 cat > /etc/kubernetes/kubelet <<EOF
@@ -65,7 +53,7 @@ EOF
 if [ "$(echo $USE_PODMAN | tr '[:upper:]' '[:lower:]')" == "true" ]; then
     cat > /etc/systemd/system/kubelet.service <<EOF
 [Unit]
-Description=Kubelet via Hyperkube (System Container)
+Description=Kubelet
 Wants=rpc-statd.service
 
 [Service]
@@ -80,11 +68,11 @@ ExecStartPre=/bin/mkdir -p /var/lib/docker
 ExecStartPre=/bin/mkdir -p /var/lib/kubelet/volumeplugins
 ExecStartPre=/bin/mkdir -p /opt/cni/bin
 ExecStartPre=-/usr/local/bin/nerdctl rm kubelet
+ExecStartPre=/bin/bash -c 'nerdctl stop kubelet; nerdctl rm -f kubelet || exit 0'
 ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kubelet \\
     --privileged \\
     --pid host \\
     --network host \\
-    --entrypoint /hyperkube \\
     --volume /:/rootfs:rslave,ro \\
     --volume /etc/cni/net.d:/etc/cni/net.d:ro,z \\
     --volume /etc/kubernetes:/etc/kubernetes:ro,z \\
@@ -94,7 +82,7 @@ ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kubelet \\
     --volume /run:/run \\
     --volume /dev:/dev \\
     --volume /sys/fs/cgroup:/sys/fs/cgroup \\
-    --volume /etc/pki/tls/certs:/usr/share/ca-certificates:ro \\
+    --volume /usr/share/ca-certificates:/usr/share/ca-certificates:ro \\
     --volume /var/lib/calico:/var/lib/calico \\
     --volume /var/lib/docker:/var/lib/docker \\
     --volume /var/lib/containerd:/var/lib/containerd \\
@@ -104,10 +92,9 @@ ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kubelet \\
     --volume /var/run/lock:/var/run/lock:z \\
     --volume /opt/cni/bin:/opt/cni/bin:z \\
     --volume /etc/machine-id:/etc/machine-id \\
-    \${CONTAINER_INFRA_PREFIX}hyperkube:\${KUBE_TAG} \\
-    kubelet \\
-    \$KUBE_LOGTOSTDERR \$KUBE_LOG_LEVEL \$KUBELET_API_SERVER \$KUBELET_ADDRESS \$KUBELET_PORT \$KUBELET_HOSTNAME \$KUBELET_ARGS'
-ExecStop=-/usr/local/bin/nerdctl stop kubelet
+    \${CONTAINER_INFRA_PREFIX:-quay.io/poseidon/}kubelet:\${KUBE_TAG} \\
+    \$KUBE_LOG_LEVEL \$KUBELET_API_SERVER \$KUBELET_ADDRESS \$KUBELET_PORT \$KUBELET_HOSTNAME \$KUBELET_ARGS'
+ExecStop=/bin/bash -c 'nerdctl stop kubelet; nerdctl rm -f kubelet || exit 0'
 Delegate=yes
 Restart=always
 TimeoutStartSec=10min
@@ -118,28 +105,27 @@ EOF
 
     cat > /etc/systemd/system/kube-proxy.service <<EOF
 [Unit]
-Description=kube-proxy via Hyperkube
+Description=kube-proxy
 [Service]
 EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
 EnvironmentFile=/etc/kubernetes/proxy
 ExecStartPre=/bin/mkdir -p /etc/kubernetes/
-ExecStartPre=-/usr/local/bin/nerdctl rm kube-proxy
+ExecStartPre=/bin/bash -c 'nerdctl stop kube-proxy; nerdctl rm -f kube-proxy || exit 0'
 ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kube-proxy \\
     --privileged \\
     --net host \\
-    --entrypoint /hyperkube \\
     --volume /etc/kubernetes:/etc/kubernetes:ro,z \\
     --volume /usr/lib/os-release:/etc/os-release:ro \\
     --volume /etc/ssl/certs:/etc/ssl/certs:ro \\
     --volume /run:/run \\
     --volume /sys/fs/cgroup:/sys/fs/cgroup \\
     --volume /lib/modules:/lib/modules:ro \\
-    --volume /etc/pki/tls/certs:/usr/share/ca-certificates:ro \\
-    \${CONTAINER_INFRA_PREFIX}hyperkube:\${KUBE_TAG} \\
+    --volume /usr/share/ca-certificates:/usr/share/ca-certificates:ro \\
+    \${CONTAINER_INFRA_PREFIX:-registry.k8s.io/}kube-proxy:\${KUBE_TAG} \\
     kube-proxy \\
-    \$KUBE_LOGTOSTDERR \$KUBE_LOG_LEVEL \$KUBE_MASTER \$KUBE_PROXY_ARGS'
-ExecStop=-/usr/local/bin/nerdctl stop kube-proxy
+    \$KUBE_LOG_LEVEL \$KUBE_MASTER \$KUBE_PROXY_ARGS'
+ExecStop=/bin/bash -c 'nerdctl stop kube-proxy; nerdctl rm -f kube-proxy || exit 0'
 Delegate=yes
 Restart=always
 TimeoutStartSec=10min
@@ -147,17 +133,6 @@ RestartSec=10
 [Install]
 WantedBy=multi-user.target
 EOF
-else
-    _prefix=${CONTAINER_INFRA_PREFIX:-docker.io/openstackmagnum/}
-    _addtl_mounts=',{"type":"bind","source":"/opt/cni","destination":"/opt/cni","options":["bind","rw","slave","mode=777"]},{"type":"bind","source":"/var/lib/docker","destination":"/var/lib/docker","options":["bind","rw","slave","mode=755"]}'
-    mkdir -p /srv/magnum/kubernetes/
-    cat > /srv/magnum/kubernetes/install-kubernetes.sh <<EOF
-#!/bin/bash -x
-atomic install --storage ostree --system --set=ADDTL_MOUNTS='${_addtl_mounts}' --system-package=no --name=kubelet ${_prefix}kubernetes-kubelet:${KUBE_TAG}
-atomic install --storage ostree --system --system-package=no --name=kube-proxy ${_prefix}kubernetes-proxy:${KUBE_TAG}
-EOF
-    chmod +x /srv/magnum/kubernetes/install-kubernetes.sh
-    $ssh_cmd "/srv/magnum/kubernetes/install-kubernetes.sh"
 fi
 
 CERT_DIR=/etc/kubernetes/certs
@@ -267,7 +242,7 @@ if [ -f /etc/sysconfig/docker ] ; then
     sed -i -E 's/^OPTIONS=("|'"'"')/OPTIONS=\1'"${DOCKER_OPTIONS}"' /' /etc/sysconfig/docker
 fi
 
-KUBELET_ARGS="${KUBELET_ARGS} --pod-infra-container-image=${CONTAINER_INFRA_PREFIX:-gcr.io/google_containers/}pause:3.1"
+KUBELET_ARGS="${KUBELET_ARGS} --pod-infra-container-image=${CONTAINER_INFRA_PREFIX:-registry.k8s.io/}pause:3.1"
 
 KUBELET_ARGS="${KUBELET_ARGS} --client-ca-file=${CERT_DIR}/ca.crt --tls-cert-file=${CERT_DIR}/kubelet.crt --tls-private-key-file=${CERT_DIR}/kubelet.key"
 
@@ -285,8 +260,6 @@ autohealing_controller=$(echo ${AUTO_HEALING_CONTROLLER} | tr '[:upper:]' '[:low
 if [[ "${auto_healing_enabled}" = "true" && "${autohealing_controller}" = "draino" ]]; then
     KUBELET_ARGS="${KUBELET_ARGS} --node-labels=draino-enabled=true"
 fi
-
-KUBELET_ARGS="${KUBELET_ARGS} --network-plugin=cni --cni-conf-dir=/etc/cni/net.d --cni-bin-dir=/opt/cni/bin"
 
 sed -i '
     /^KUBELET_ADDRESS=/ s/=.*/="--address=0.0.0.0"/
