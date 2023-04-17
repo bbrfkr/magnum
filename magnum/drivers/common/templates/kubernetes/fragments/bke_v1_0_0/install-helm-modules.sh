@@ -17,8 +17,6 @@ if [ ! -z "$NO_PROXY" ]; then
     export NO_PROXY
 fi
 
-ssh_cmd="ssh -F /srv/magnum/.ssh/config root@localhost"
-
 echo "Waiting for Kubernetes API..."
 until  [ "ok" = "$(kubectl get --raw='/healthz')" ]; do
     sleep 5
@@ -31,26 +29,26 @@ else
         HELM_CLIENT_URL="https://get.helm.sh/helm-$HELM_CLIENT_TAG-linux-amd64.tar.gz"
     fi
     i=0
-    until curl -o /srv/magnum/helm-client.tar.gz "${HELM_CLIENT_URL}"; do
+    until curl -o /tmp/helm-client.tar.gz "${HELM_CLIENT_URL}"; do
         i=$((i + 1))
         [ $i -lt 5 ] || break;
         sleep 5
     done
 
-    if ! echo "${HELM_CLIENT_SHA256} /srv/magnum/helm-client.tar.gz" | sha256sum -c - ; then
+    if ! echo "${HELM_CLIENT_SHA256} /tmp/helm-client.tar.gz" | sha256sum -c - ; then
         echo "ERROR helm-client.tar.gz computed checksum did NOT match, exiting."
         exit 1
     fi
 
     source /etc/bashrc
-    $ssh_cmd tar xzvf /srv/magnum/helm-client.tar.gz linux-amd64/helm -O > /srv/magnum/bin/helm
-    $ssh_cmd chmod +x /srv/magnum/bin/helm
+    tar xzvf /tmp/helm-client.tar.gz linux-amd64/helm -O > /usr/local/bin/helm
+    chmod +x /usr/local/bin/helm
 
     helm_install_cmd="helm upgrade --install magnum . --namespace kube-system --values values.yaml --render-subchart-notes"
     helm_history_cmd="helm history magnum --namespace kube-system"
     if [[ "${HELM_CLIENT_TAG}" == v2.* ]]; then
         CERTS_DIR="/etc/kubernetes/helm/certs"
-        export HELM_HOME="/srv/magnum/kubernetes/helm/home"
+        export HELM_HOME="/etc/kubernetes/helm/home"
         export HELM_TLS_ENABLE="true"
         export TILLER_NAMESPACE
         mkdir -p "${HELM_HOME}"
@@ -66,7 +64,7 @@ else
         helm_history_cmd="helm history magnum"
     fi
 
-    HELM_CHART_DIR="/srv/magnum/kubernetes/helm/magnum"
+    HELM_CHART_DIR="/etc/kubernetes/helm/magnum"
     if [[ -d "${HELM_CHART_DIR}" ]]; then
         pushd ${HELM_CHART_DIR}
         cat << EOF > Chart.yaml

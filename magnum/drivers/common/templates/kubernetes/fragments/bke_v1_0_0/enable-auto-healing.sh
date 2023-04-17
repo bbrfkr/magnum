@@ -8,7 +8,7 @@ _gcr_prefix=${CONTAINER_INFRA_PREFIX:-registry.k8s.io/}
 # Either auto scaling or auto healing we need CA to be deployed
 if [[ "$(echo $AUTO_HEALING_ENABLED | tr '[:upper:]' '[:lower:]')" = "true" || "$(echo $NPD_ENABLED | tr '[:upper:]' '[:lower:]')" = "true" ]]; then
     # Generate Node Problem Detector manifest file
-    NPD_DEPLOY=/srv/magnum/kubernetes/manifests/npd.yaml
+    NPD_DEPLOY=/etc/kubernetes/manifests/npd.yaml
 
     [ -f ${NPD_DEPLOY} ] || {
         echo "Writing File: $NPD_DEPLOY"
@@ -64,24 +64,24 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: node-problem-detector
-    version: ${NODE_PROBLEM_DETECTOR_TAG}
+    version: v0.8.13
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: Reconcile
 spec:
   selector:
     matchLabels:
       k8s-app: node-problem-detector
-      version: ${NODE_PROBLEM_DETECTOR_TAG}
+      version: v0.8.13
   template:
     metadata:
       labels:
         k8s-app: node-problem-detector
-        version: ${NODE_PROBLEM_DETECTOR_TAG}
+        version: v0.8.13
         kubernetes.io/cluster-service: "true"
     spec:
       containers:
       - name: node-problem-detector
-        image: ${_gcr_prefix}node-problem-detector:${NODE_PROBLEM_DETECTOR_TAG}
+        image: ${_gcr_prefix}node-problem-detector/node-problem-detector:v0.8.13
         command:
         - "/bin/sh"
         - "-c"
@@ -139,7 +139,7 @@ fi
 function enable_draino {
     echo "Installing draino"
     _docker_draino_prefix=${CONTAINER_INFRA_PREFIX:-docker.io/planetlabs/}
-    draino_manifest=/srv/magnum/kubernetes/manifests/draino.yaml
+    draino_manifest=/etc/kubernetes/manifests/draino.yaml
 
     [ -f ${draino_manifest} ] || {
         echo "Writing File: $draino_manifest"
@@ -241,7 +241,7 @@ function enable_magnum_auto_healer {
     echo "Installing magnum_auto_healer"
     image_prefix=${CONTAINER_INFRA_PREFIX:-docker.io/k8scloudprovider/}
     image_prefix=${image_prefix%/}
-    magnum_auto_healer_manifest=/srv/magnum/kubernetes/manifests/magnum_auto_healer.yaml
+    magnum_auto_healer_manifest=/etc/kubernetes/manifests/magnum_auto_healer.yaml
 
     [ -f ${magnum_auto_healer_manifest} ] || {
         echo "Writing File: ${magnum_auto_healer_manifest}"

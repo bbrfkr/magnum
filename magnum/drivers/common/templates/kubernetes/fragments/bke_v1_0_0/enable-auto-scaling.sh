@@ -11,7 +11,7 @@ autohealing_controller=$(echo ${AUTO_HEALING_CONTROLLER} | tr '[:upper:]' '[:low
 
 if [[ "${auto_scaling_enabled}" = "true" || ("${auto_healing_enabled}" = "true" && "${autohealing_controller}" = "draino") ]]; then
     # Generate Autoscaler manifest file
-    AUTOSCALER_DEPLOY=/srv/magnum/kubernetes/manifests/autoscaler.yaml
+    AUTOSCALER_DEPLOY=/etc/kubernetes/manifests/autoscaler.yaml
 
     [ -f ${AUTOSCALER_DEPLOY} ] || {
         echo "Writing File: $AUTOSCALER_DEPLOY"
@@ -136,7 +136,7 @@ spec:
       serviceAccountName: cluster-autoscaler-account
       containers:
         - name: cluster-autoscaler
-          image: ${_docker_ca_prefix}cluster-autoscaler:${AUTOSCALER_TAG}
+          image: registry.k8s.io/autoscaling/cluster-autoscaler:${AUTOSCALER_TAG}
           imagePullPolicy: Always
           command:
             - ./cluster-autoscaler
@@ -197,7 +197,7 @@ stringData:
     password=$TRUSTEE_PASSWORD
     trust-id=$TRUST_ID
     region=$REGION_NAME
-    ca-file=/etc/ssl/certs/ca-certificates.crt
+    ca-file=/etc/kubernetes/ca-certificates.crt
 EOF
 
     kubectl apply -f ${AUTOSCALER_DEPLOY}

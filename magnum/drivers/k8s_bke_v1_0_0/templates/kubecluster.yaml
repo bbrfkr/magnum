@@ -1393,11 +1393,11 @@ resources:
             #     template: {get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-keystone-auth.sh}
             #     params:
             #       "$KEYSTONE_AUTH_DEFAULT_POLICY": {get_param: keystone_auth_default_policy}
-            # - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-auto-healing.sh
-            # - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-auto-scaling.sh
+            - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-auto-healing.sh
+            - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-auto-scaling.sh
             # - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-cinder-csi.sh
             # # Helm Based Installation Configuration Scripts
-            # - get_file: ../../common/templates/kubernetes/helm/metrics-server.sh
+            - get_file: ../../common/templates/kubernetes/helm/metrics-server.sh
             # - str_replace:
             #     template: {get_file: ../../common/templates/kubernetes/helm/prometheus-operator.sh}
             #     params:
@@ -1405,7 +1405,7 @@ resources:
             #       "${KUBE_MASTERS_PRIVATE}": {get_attr: [kube_masters, kube_master_ip]}
             # - get_file: ../../common/templates/kubernetes/helm/prometheus-adapter.sh
             # - get_file: ../../common/templates/kubernetes/helm/ingress-nginx.sh
-            # - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/install-helm-modules.sh
+            - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/install-helm-modules.sh
 
   kube_cluster_deploy:
     condition: create_cluster_resources
