@@ -153,6 +153,15 @@ metadata:
   name: draino
   namespace: kube-system
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: draino
+  namespace: kube-system
+  annotations:
+    kubernetes.io/service-account.name: "draino"
+type: kubernetes.io/service-account-token
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -209,6 +218,8 @@ spec:
     spec:
       nodeSelector:
         node-role.kubernetes.io/master: ""
+      securityContext:
+        runAsUser: 0
       hostNetwork: true
       tolerations:
         - effect: NoSchedule
@@ -224,17 +235,34 @@ spec:
           effect: NoSchedule
       containers:
       # You'll want to change these labels and conditions to suit your deployment.
-      - command: [/draino, --node-label=draino-enabled=true, --evict-daemonset-pods, --evict-emptydir-pods, NotReady]
-        image: ${_docker_draino_prefix}draino:${DRAINO_TAG}
+      - command:
+          - /draino
+          - --node-label=draino-enabled=true
+          - --evict-daemonset-pods
+          - --evict-emptydir-pods
+          - --kubeconfig=/etc/kubernetes/admin.conf
+          - --debug
+          - KernelDeadlock
+          - ReadonlyFilesystem
+          - NetworkUnavailable
+        image: ${_docker_draino_prefix}draino:e0d5277
         livenessProbe:
           httpGet: {path: /healthz, port: 10002}
           initialDelaySeconds: 30
         name: draino
-      serviceAccountName: draino
+        volumeMounts:
+          - name: kubernetes
+            mountPath: /etc/kubernetes
+            readOnly: true
+      volumes:
+        - name: kubernetes
+          hostPath:
+            path: /etc/kubernetes
+            type: Directory      
 EOF
     }
 
-    kubectl apply -f ${draino_manifest}
+    kubectl apply -f ${draino_deploy_manifest}
 }
 
 function enable_magnum_auto_healer {
