@@ -262,7 +262,7 @@ spec:
 EOF
     }
 
-    kubectl apply -f ${draino_deploy_manifest}
+    kubectl apply -f ${draino_manifest}
 }
 
 function enable_magnum_auto_healer {

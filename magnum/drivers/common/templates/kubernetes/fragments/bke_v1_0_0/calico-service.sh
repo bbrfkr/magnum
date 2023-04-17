@@ -12,7 +12,7 @@ if [ "$NETWORK_DRIVER" = "calico" ]; then
         echo "Waiting for Kubernetes API..."
         sleep 5
     done
-    cat <<"EOF" | kubectl apply -f -
+    cat <<'EOF' > /tmp/calico.yaml
 ---
 # Source: calico/templates/calico-kube-controllers.yaml
 # This manifest creates a Pod Disruption Budget for Controller to allow K8s Cluster Autoscaler to evict
@@ -4614,7 +4614,7 @@ spec:
             # chosen from this range. Changing this value after installation will have
             # no effect. This should fall within `--cluster-cidr`.
             - name: CALICO_IPV4POOL_CIDR
-              value: "${CALICO_IPV4POOL}"
+              value: "$CALICO_IPV4POOL"
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
@@ -4793,6 +4793,8 @@ spec:
               - -r
             periodSeconds: 10
 EOF
+    sed -i "s@\$CALICO_IPV4POOL@${CALICO_IPV4POOL}@g" /tmp/calico.yaml
+    kubectl apply -f /tmp/calico.yaml
 fi
 
 printf "Finished running ${step}\n"
