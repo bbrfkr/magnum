@@ -12,7 +12,7 @@ if [ "$NETWORK_DRIVER" = "calico" ]; then
         echo "Waiting for Kubernetes API..."
         sleep 5
     done
-    cat <<EOF | kubectl apply -f -
+    cat <<"EOF" | kubectl apply -f -
 ---
 # Source: calico/templates/calico-kube-controllers.yaml
 # This manifest creates a Pod Disruption Budget for Controller to allow K8s Cluster Autoscaler to evict
