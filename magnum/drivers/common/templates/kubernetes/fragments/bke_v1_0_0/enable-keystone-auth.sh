@@ -8,7 +8,7 @@ if [ "$(echo $KEYSTONE_AUTH_ENABLED | tr '[:upper:]' '[:lower:]')" != "false" ];
     CERT_DIR=/etc/kubernetes/certs
 
     # Create policy configmap for keystone auth
-    KEYSTONE_AUTH_POLICY=/srv/magnum/kubernetes/keystone-auth-policy.yaml
+    KEYSTONE_AUTH_POLICY=/etc/kubernetes/keystone-auth-policy.yaml
 
     [ -f ${KEYSTONE_AUTH_POLICY} ] || {
         echo "Writing File: $KEYSTONE_AUTH_POLICY"
@@ -79,7 +79,7 @@ EOF
     }
 
     # Generate k8s-keystone-auth service manifest file
-    KEYSTONE_AUTH_DEPLOY=/srv/magnum/kubernetes/manifests/k8s-keystone-auth.yaml
+    KEYSTONE_AUTH_DEPLOY=/etc/kubernetes/manifests/k8s-keystone-auth.yaml
 
     [ -f ${KEYSTONE_AUTH_DEPLOY} ] || {
         echo "Writing File: $KEYSTONE_AUTH_DEPLOY"

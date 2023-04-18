@@ -314,7 +314,7 @@ preferences: {}
 clusters:
   - cluster:
       insecure-skip-tls-verify: true
-      server: https://127.0.0.1:6443/webhook
+      server: https://127.0.0.1:8443/webhook
     name: webhook
 users:
   - name: webhook
