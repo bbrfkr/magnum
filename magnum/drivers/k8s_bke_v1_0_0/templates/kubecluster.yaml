@@ -1389,10 +1389,10 @@ resources:
             #       $enable-ingress-octavia: {get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-ingress-octavia.sh}
             #     template: {get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-ingress-controller.sh}
             # - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/kube-dashboard-service.sh
-            # - str_replace:
-            #     template: {get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-keystone-auth.sh}
-            #     params:
-            #       "$KEYSTONE_AUTH_DEFAULT_POLICY": {get_param: keystone_auth_default_policy}
+            - str_replace:
+                template: {get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-keystone-auth.sh}
+                params:
+                  "$KEYSTONE_AUTH_DEFAULT_POLICY": {get_param: keystone_auth_default_policy}
             - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-auto-healing.sh
             - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-auto-scaling.sh
             - get_file: ../../common/templates/kubernetes/fragments/bke_v1_0_0/enable-cinder-csi.sh
