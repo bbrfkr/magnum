@@ -120,7 +120,7 @@ spec:
         node-role.kubernetes.io/master: ""
       containers:
         - name: k8s-keystone-auth
-          image: ${_prefix}k8s-keystone-auth:${K8S_KEYSTONE_AUTH_TAG}
+          image: ${_prefix}k8s-keystone-auth:v1.26.2
           imagePullPolicy: Always
           args:
             - ./bin/k8s-keystone-auth
