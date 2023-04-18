@@ -8,7 +8,7 @@ cinder_csi_enabled=$(echo $CINDER_CSI_ENABLED | tr '[:upper:]' '[:lower:]')
 
 if [ "${volume_driver}" = "cinder" ] && [ "${cinder_csi_enabled}" = "true" ]; then
     # Generate Cinder CSI manifest file
-    CINDER_CSI_DEPLOY=/srv/magnum/kubernetes/manifests/cinder-csi.yaml
+    CINDER_CSI_DEPLOY=/etc/kubernetes/manifests/cinder-csi.yaml
     echo "Writing File: $CINDER_CSI_DEPLOY"
     mkdir -p $(dirname ${CINDER_CSI_DEPLOY})
     cat << EOF > ${CINDER_CSI_DEPLOY}
@@ -257,7 +257,7 @@ spec:
         node-role.kubernetes.io/master: ""
       containers:
         - name: csi-attacher
-          image: ${CONTAINER_INFRA_PREFIX:-quay.io/k8scsi/}csi-attacher:${CSI_ATTACHER_TAG}
+          image: ${CONTAINER_INFRA_PREFIX:-registry.k8s.io/sig-storage/}csi-attacher:v4.2.0
           args:
             - "--v=5"
             - "--csi-address=\$(ADDRESS)"
@@ -273,8 +273,9 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-provisioner
-          image: ${CONTAINER_INFRA_PREFIX:-quay.io/k8scsi/}csi-provisioner:${CSI_PROVISIONER_TAG}
+          image: ${CONTAINER_INFRA_PREFIX:-registry.k8s.io/sig-storage/}csi-provisioner:v3.4.0
           args:
+            - "--v=5"
             - "--csi-address=\$(ADDRESS)"
             - "--timeout=3m"
           resources:
@@ -288,8 +289,9 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-snapshotter
-          image: ${CONTAINER_INFRA_PREFIX:-quay.io/k8scsi/}csi-snapshotter:${CSI_SNAPSHOTTER_TAG}
+          image: ${CONTAINER_INFRA_PREFIX:-registry.k8s.io/sig-storage/}csi-snapshotter:v5.0.1
           args:
+            - "--v=5"
             - "--csi-address=\$(ADDRESS)"
           resources:
             requests:
@@ -302,7 +304,7 @@ spec:
             - mountPath: /var/lib/csi/sockets/pluginproxy/
               name: socket-dir
         - name: csi-resizer
-          image: ${CONTAINER_INFRA_PREFIX:-quay.io/k8scsi/}csi-resizer:${CSI_RESIZER_TAG}
+          image: ${CONTAINER_INFRA_PREFIX:-registry.k8s.io/sig-storage/}csi-resizer:v1.7.0
           args:
             - "--v=5"
             - "--csi-address=\$(ADDRESS)"
@@ -317,9 +319,10 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: cinder-csi-plugin
-          image: ${CONTAINER_INFRA_PREFIX:-docker.io/k8scloudprovider/}cinder-csi-plugin:${CINDER_CSI_PLUGIN_TAG}
+          image: ${CONTAINER_INFRA_PREFIX:-docker.io/k8scloudprovider/}cinder-csi-plugin:v1.26.2
           args :
             - /bin/cinder-csi-plugin
+            - "--v=5"
             - "--nodeid=\$(NODE_ID)"
             - "--endpoint=\$(CSI_ENDPOINT)"
             - "--cloud-config=\$(CLOUD_CONFIG)"
@@ -412,8 +415,9 @@ spec:
       hostNetwork: true
       containers:
         - name: node-driver-registrar
-          image: ${CONTAINER_INFRA_PREFIX:-quay.io/k8scsi/}csi-node-driver-registrar:${CSI_NODE_DRIVER_REGISTRAR_TAG}
+          image: ${CONTAINER_INFRA_PREFIX:-registry.k8s.io/sig-storage/}csi-node-driver-registrar:v2.7.0
           args:
+            - "--v=5"
             - "--csi-address=\$(ADDRESS)"
             - "--kubelet-registration-path=\$(DRIVER_REG_SOCK_PATH)"
           resources:
@@ -444,9 +448,10 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
             allowPrivilegeEscalation: true
-          image: ${CONTAINER_INFRA_PREFIX:-docker.io/k8scloudprovider/}cinder-csi-plugin:${CINDER_CSI_PLUGIN_TAG}
+          image: ${CONTAINER_INFRA_PREFIX:-docker.io/k8scloudprovider/}cinder-csi-plugin:v1.26.2
           args :
             - /bin/cinder-csi-plugin
+            - "--v=5"
             - "--nodeid=\$(NODE_ID)"
             - "--endpoint=\$(CSI_ENDPOINT)"
             - "--cloud-config=\$(CLOUD_CONFIG)"
@@ -545,7 +550,32 @@ stringData:
     region=$REGION_NAME
     ca-file=/etc/ssl/certs/ca-certificates.crt
 EOF
-
     kubectl apply -f ${CINDER_CSI_DEPLOY}
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v6.2.1/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
+    kubectl apply -f https://github.com/kubernetes-csi/external-snapshotter/blob/v6.2.1/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v6.2.1/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v6.2.1/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v6.2.1/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+    cat <<EOF | kubectl apply -f -
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  name: csi-sc-cinderplugin
+provisioner: cinder.csi.openstack.org
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  annotations:
+    snapshot.storage.kubernetes.io/is-default-class: "true"
+  name: csi-cinder-snapclass
+driver: cinder.csi.openstack.org
+deletionPolicy: Delete
+parameters:
+  force-create: "false"
+EOF
 fi
 printf "Finished running ${step}\n"

@@ -153,15 +153,6 @@ metadata:
   name: draino
   namespace: kube-system
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: draino
-  namespace: kube-system
-  annotations:
-    kubernetes.io/service-account.name: "draino"
-type: kubernetes.io/service-account-token
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -258,7 +249,8 @@ spec:
         - name: kubernetes
           hostPath:
             path: /etc/kubernetes
-            type: Directory      
+            type: Directory
+      serviceAccountName: draino
 EOF
     }
 
