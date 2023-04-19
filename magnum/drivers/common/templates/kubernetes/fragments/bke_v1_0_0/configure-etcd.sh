@@ -48,7 +48,7 @@ fi
 cat > /etc/systemd/system/etcd.service <<EOF
 [Unit]
 Description=Etcd server
-After=network-online.target
+After=network-online.target containerd.service
 Wants=network-online.target
 
 [Service]

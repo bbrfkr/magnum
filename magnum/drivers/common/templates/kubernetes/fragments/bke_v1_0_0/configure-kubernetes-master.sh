@@ -67,6 +67,8 @@ EOF
 cat > /etc/systemd/system/kube-apiserver.service <<EOF
 [Unit]
 Description=kube-apiserver
+After=containerd.service
+
 [Service]
 EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
@@ -95,6 +97,8 @@ EOF
 cat > /etc/systemd/system/kube-controller-manager.service <<EOF
 [Unit]
 Description=kube-controller-manager
+After=containerd.service
+
 [Service]
 EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
@@ -124,6 +128,8 @@ EOF
 cat > /etc/systemd/system/kube-scheduler.service <<EOF
 [Unit]
 Description=kube-scheduler
+After=containerd.service
+
 [Service]
 EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
@@ -155,6 +161,7 @@ cat > /etc/systemd/system/kubelet.service <<EOF
 [Unit]
 Description=Kubelet
 Wants=rpc-statd.service
+After=containerd.service
 
 [Service]
 EnvironmentFile=/etc/sysconfig/heat-params
@@ -205,6 +212,8 @@ EOF
 cat > /etc/systemd/system/kube-proxy.service <<EOF
 [Unit]
 Description=kube-proxy
+After=containerd.service
+
 [Service]
 EnvironmentFile=/etc/sysconfig/heat-params
 EnvironmentFile=/etc/kubernetes/config
