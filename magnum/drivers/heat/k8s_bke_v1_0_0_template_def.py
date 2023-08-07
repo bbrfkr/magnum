@@ -93,6 +93,7 @@ class K8sBkeTemplateDefinition(k8s_template_def.K8sTemplateDefinition):
                       'etcd_tag', 'flannel_tag', 'flannel_cni_tag',
                       'cloud_provider_tag',
                       'prometheus_tag', 'grafana_tag',
+                      'proxy_registry_url',
                       'heat_container_agent_tag',
                       'keystone_auth_enabled', 'k8s_keystone_auth_tag',
                       'heapster_enabled',

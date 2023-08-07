@@ -323,6 +323,10 @@ parameters:
     type: string
     description: insecure registry url
 
+  proxy_registry_url:
+    type: string
+    description: proxy registry url
+
   container_infra_prefix:
     type: string
     description: >
@@ -787,6 +791,7 @@ resources:
                   "$TRUSTEE_PASSWORD": {get_param: trustee_password}
                   "$TRUST_ID": {get_param: trust_id}
                   "$INSECURE_REGISTRY_URL": {get_param: insecure_registry_url}
+                  "$PROXY_REGISTRY_URL": {get_param: proxy_registry_url}
                   "$CONTAINER_INFRA_PREFIX": {get_param: container_infra_prefix}
                   "$ETCD_LB_VIP": {get_param: etcd_lb_vip}
                   "$DNS_SERVICE_IP": {get_param: dns_service_ip}

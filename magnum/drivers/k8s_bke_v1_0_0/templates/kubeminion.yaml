@@ -244,6 +244,10 @@ parameters:
     type: string
     description: insecure registry url
 
+  proxy_registry_url:
+    type: string
+    description: proxy registry url
+
   container_infra_prefix:
     type: string
     description: >
@@ -433,6 +437,7 @@ resources:
                   $AUTH_URL: {get_param: auth_url}
                   $CLOUD_PROVIDER_ENABLED: {get_param: cloud_provider_enabled}
                   $INSECURE_REGISTRY_URL: {get_param: insecure_registry_url}
+                  $PROXY_REGISTRY_URL: {get_param: proxy_registry_url}
                   $CONTAINER_INFRA_PREFIX: {get_param: container_infra_prefix}
                   $DNS_SERVICE_IP: {get_param: dns_service_ip}
                   $DNS_CLUSTER_DOMAIN: {get_param: dns_cluster_domain}
