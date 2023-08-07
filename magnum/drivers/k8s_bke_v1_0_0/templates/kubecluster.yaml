@@ -529,9 +529,9 @@ parameters:
     description: insecure registry url
     default: ""
 
-  proxy_registry_url:
+  dockerhub_proxy_url:
     type: string
-    description: proxy registry url
+    description: dockerhub proxy url
     default: ""
 
   container_infra_prefix:
@@ -1290,7 +1290,7 @@ resources:
           trust_id: {get_param: trust_id}
           auth_url: {get_param: auth_url}
           insecure_registry_url: {get_param: insecure_registry_url}
-          proxy_registry_url: {get_param: proxy_registry_url}
+          dockerhub_proxy_url: {get_param: dockerhub_proxy_url}
           container_infra_prefix: {get_param: container_infra_prefix}
           etcd_lb_vip: {get_attr: [etcd_lb, address]}
           dns_service_ip: {get_param: dns_service_ip}
@@ -1521,7 +1521,7 @@ resources:
           trust_id: {get_param: trust_id}
           cloud_provider_enabled: {get_param: cloud_provider_enabled}
           insecure_registry_url: {get_param: insecure_registry_url}
-          proxy_registry_url: {get_param: proxy_registry_url}
+          dockerhub_proxy_url: {get_param: dockerhub_proxy_url}
           container_infra_prefix: {get_param: container_infra_prefix}
           dns_service_ip: {get_param: dns_service_ip}
           dns_cluster_domain: {get_param: dns_cluster_domain}

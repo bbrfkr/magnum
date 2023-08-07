@@ -244,9 +244,9 @@ parameters:
     type: string
     description: insecure registry url
 
-  proxy_registry_url:
+  dockerhub_proxy_url:
     type: string
-    description: proxy registry url
+    description: dockerhub proxy url
 
   container_infra_prefix:
     type: string
@@ -437,7 +437,7 @@ resources:
                   $AUTH_URL: {get_param: auth_url}
                   $CLOUD_PROVIDER_ENABLED: {get_param: cloud_provider_enabled}
                   $INSECURE_REGISTRY_URL: {get_param: insecure_registry_url}
-                  $PROXY_REGISTRY_URL: {get_param: proxy_registry_url}
+                  $DOCKERHUB_PROXY_URL: {get_param: dockerhub_proxy_url}
                   $CONTAINER_INFRA_PREFIX: {get_param: container_infra_prefix}
                   $DNS_SERVICE_IP: {get_param: dns_service_ip}
                   $DNS_CLUSTER_DOMAIN: {get_param: dns_cluster_domain}
