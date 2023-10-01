@@ -1444,8 +1444,8 @@ resources:
     condition: create_cluster_resources
     type: OS::Heat::SoftwareDeployment
     depends_on:
-      - kube_masters
-      - kube_minions
+    - kube_masters
+    - kube_minions
     properties:
       actions: ['CREATE']
       signal_transport: HEAT_SIGNAL
