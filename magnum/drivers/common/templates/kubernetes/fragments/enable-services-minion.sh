@@ -18,8 +18,16 @@ if [ ${CONTAINER_RUNTIME} = "containerd"  ] ; then
 else
     container_runtime_service="docker"
 fi
+
 for action in enable restart; do
-    for service in ${container_runtime_service} kubelet kube-proxy; do
+    for service in ${container_runtime_service}; do
+        echo "$action service $service"
+        $ssh_cmd systemctl $action $service
+    done
+done
+
+for action in enable restart; do
+    for service in kubelet kube-proxy; do
         echo "$action service $service"
         $ssh_cmd systemctl $action $service
     done
