@@ -14,6 +14,7 @@ import abc
 import collections
 import os
 from pbr.version import SemanticVersion as SV
+import re
 import six
 
 from string import ascii_letters
@@ -820,7 +821,7 @@ class BkeKubernetesDriver(KubernetesDriver):
     def rotate_ca_certificate(self, context, cluster):
         cluster_template = conductor_utils.retrieve_cluster_template(context,
                                                                      cluster)
-        if cluster_template.cluster_distro not in ["bke-os"]:
+        if not re.match(r'^bke-os-.*', cluster_template.cluster_distro):
             raise exception.NotSupported("Rotating the CA certificate is "
                                          "not supported for cluster with "
                                          "cluster_distro: %s." %
