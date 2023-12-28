@@ -1556,7 +1556,7 @@ resources:
           cloud_provider_enabled: {get_param: cloud_provider_enabled}
           insecure_registry_url: {get_param: insecure_registry_url}
           dockerhub_proxy_url: {get_param: dockerhub_proxy_url}
-          use_gpu: {get_params: use_gpu}
+          use_gpu: {get_param: use_gpu}
           container_infra_prefix: {get_param: container_infra_prefix}
           dns_service_ip: {get_param: dns_service_ip}
           dns_cluster_domain: {get_param: dns_cluster_domain}
