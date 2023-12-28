@@ -888,7 +888,7 @@ resources:
                   "$POST_INSTALL_MANIFEST_URL": {get_param: post_install_manifest_url}
                   "$METRICS_SCRAPER_TAG":  {get_param: metrics_scraper_tag}
             - get_file: ../../common/templates/kubernetes/fragments/bke_v2_0_0/install-cri.sh
-            #- get_file: ../../common/templates/kubernetes/fragments/bke_v2_0_0/install-clients.sh
+            - get_file: ../../common/templates/kubernetes/fragments/bke_v2_0_0/install-clients.sh
             - get_file: ../../common/templates/kubernetes/fragments/bke_v2_0_0/make-cert.sh
             - get_file: ../../common/templates/kubernetes/fragments/bke_v2_0_0/make-cert-client.sh
             - str_replace:
