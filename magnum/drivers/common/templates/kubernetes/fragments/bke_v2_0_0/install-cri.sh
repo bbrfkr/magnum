@@ -12,7 +12,7 @@ containerd config default > /etc/containerd/config.toml
 if [ -n "${DOCKERHUB_PROXY_URL}" ] ; then
   cat /etc/containerd/config.toml | \
   yj -ty | \
-  yq ".plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"docker.io\".endpoint |= .+ [\"$DOCKERHUB_PROXY_URL\"]" | \
+  yq ".plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"docker.io\".endpoint = [\"$DOCKERHUB_PROXY_URL\"]" | \
   yj -yt > /tmp/config.toml
   mv /tmp/config.toml /etc/containerd/config.toml
 fi
