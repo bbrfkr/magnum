@@ -18,7 +18,9 @@ if [ -n "${DOCKERHUB_PROXY_URL}" ] ; then
 fi
 
 if [ "$(echo "${USE_GPU}" | tr '[:upper:]' '[:lower:]')" = "true" ] ; then
-  nvidia-ctk runtime configure --runtime=containerd
+  if [ "$(echo "${IS_MASTER}" | tr '[:upper:]' '[:lower:]')" = "false" ] ; then
+    nvidia-ctk runtime configure --runtime=containerd
+  fi
 fi
 
 # enable containerd

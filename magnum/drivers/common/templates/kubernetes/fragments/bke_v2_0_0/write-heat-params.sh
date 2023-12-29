@@ -19,6 +19,7 @@ HEAT_PARAMS=/etc/sysconfig/heat-params
     echo "Writing File: $HEAT_PARAMS"
     mkdir -p "$(dirname ${HEAT_PARAMS})"
     cat > ${HEAT_PARAMS} <<EOF
+IS_MASTER="False"
 ARCH="$ARCH"
 INSTANCE_NAME="$INSTANCE_NAME"
 HEAPSTER_ENABLED="$HEAPSTER_ENABLED"

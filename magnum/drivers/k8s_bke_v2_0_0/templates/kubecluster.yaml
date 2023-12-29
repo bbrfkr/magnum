@@ -1320,6 +1320,7 @@ resources:
           auth_url: {get_param: auth_url}
           insecure_registry_url: {get_param: insecure_registry_url}
           dockerhub_proxy_url: {get_param: dockerhub_proxy_url}
+          use_gpu: {get_param: use_gpu}
           container_infra_prefix: {get_param: container_infra_prefix}
           etcd_lb_vip: {get_attr: [etcd_lb, address]}
           dns_service_ip: {get_param: dns_service_ip}
@@ -1434,6 +1435,7 @@ resources:
             - get_file: ../../common/templates/kubernetes/fragments/bke_v2_0_0/enable-auto-healing.sh
             - get_file: ../../common/templates/kubernetes/fragments/bke_v2_0_0/enable-auto-scaling.sh
             - get_file: ../../common/templates/kubernetes/fragments/bke_v2_0_0/enable-cinder-csi.sh
+            - get_file: ../../common/templates/kubernetes/fragments/bke_v2_0_0/enable-nvidia-device-plugin.sh
             # # Helm Based Installation Configuration Scripts
             - get_file: ../../common/templates/kubernetes/helm/metrics-server.sh
             # - str_replace:

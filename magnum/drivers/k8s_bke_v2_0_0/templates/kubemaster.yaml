@@ -327,6 +327,10 @@ parameters:
     type: string
     description: dockerhub proxy url
 
+  use_gpu:
+    type: boolean
+    description: whether use gpu or not
+
   container_infra_prefix:
     type: string
     description: >
@@ -809,6 +813,7 @@ resources:
                   "$TRUST_ID": {get_param: trust_id}
                   "$INSECURE_REGISTRY_URL": {get_param: insecure_registry_url}
                   "$DOCKERHUB_PROXY_URL": {get_param: dockerhub_proxy_url}
+                  "$USE_GPU": {get_param: use_gpu}
                   "$CONTAINER_INFRA_PREFIX": {get_param: container_infra_prefix}
                   "$ETCD_LB_VIP": {get_param: etcd_lb_vip}
                   "$DNS_SERVICE_IP": {get_param: dns_service_ip}
