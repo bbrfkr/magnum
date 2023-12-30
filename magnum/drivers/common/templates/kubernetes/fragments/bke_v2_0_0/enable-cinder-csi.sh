@@ -571,6 +571,8 @@ metadata:
     storageclass.kubernetes.io/is-default-class: "true"
   name: csi-sc-cinderplugin
 provisioner: cinder.csi.openstack.org
+parameters:
+  fsType: ext4
 ---
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshotClass
