@@ -715,11 +715,6 @@ class BkeKubernetesDriver(KubernetesDriver):
     def rotate_ca_certificate(self, context, cluster):
         cluster_template = conductor_utils.retrieve_cluster_template(context,
                                                                      cluster)
-        if not re.match(r'^bke-os-.*', cluster_template.cluster_distro):
-            raise exception.NotSupported("Rotating the CA certificate is "
-                                         "not supported for cluster with "
-                                         "cluster_distro: %s." %
-                                         cluster_template.cluster_distro)
         osc = clients.OpenStackClients(context)
         rollback = True
         heat_params = {}
