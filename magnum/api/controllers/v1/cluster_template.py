@@ -443,6 +443,12 @@ class ClusterTemplatesController(base.Controller):
                           DeprecationWarning)
             LOG.warning(self._heat_driver_deprecation_note)
 
+        if (cluster_template_dict['coe'] == 'swarm' or
+                cluster_template_dict['coe'] == 'swarm-mode'):
+            warnings.warn(self._docker_swarm_deprecation_note,
+                          DeprecationWarning)
+            LOG.warning(self._docker_swarm_deprecation_note)
+
         # NOTE(yuywz): We will generate a random human-readable name for
         # cluster_template if the name is not specified by user.
         arg_name = cluster_template_dict.get('name')
