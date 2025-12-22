@@ -24,7 +24,7 @@ class Driver(driver.BkeKubernetesDriver):
     def provides(self):
         return [
             {'server_type': 'vm',
-             'os': 'bke-os-v2.0.0',
+             'os': 'bke-os-v2.1.0',
              'coe': 'kubernetes'},
         ]
 
