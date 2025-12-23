@@ -21,7 +21,7 @@ if [ "$NETWORK_DRIVER" = "calico" ]; then
 
     for crd in "installations.operator.tigera.io" "apiservers.operator.tigera.io" "goldmanes.operator.tigera.io" "whiskers.operator.tigera.io"; do
       kubectl wait --for=condition=Established crd/${crd}
-    end
+    done
 
     cat <<EOF | kubectl apply -f -
 ---
