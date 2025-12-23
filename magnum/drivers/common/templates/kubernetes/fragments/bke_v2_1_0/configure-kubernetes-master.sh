@@ -155,7 +155,9 @@ TimeoutStartSec=10min
 WantedBy=multi-user.target
 EOF
 
-
+# download kubelet
+curl -sSL "https://dl.k8s.io/${KUBE_TAG}/kubernetes-node-linux-amd64.tar.gz" | tar xzfv - -O kubernetes/node/bin/kubelet > /usr/bin/kubelet
+chmod +x /usr/bin/kubelet
 
 cat > /etc/systemd/system/kubelet.service <<EOF
 [Unit]
@@ -174,33 +176,7 @@ ExecStartPre=/bin/mkdir -p /var/lib/containerd
 ExecStartPre=/bin/mkdir -p /var/lib/docker
 ExecStartPre=/bin/mkdir -p /var/lib/kubelet/volumeplugins
 ExecStartPre=/bin/mkdir -p /opt/cni/bin
-ExecStartPre=/bin/bash -c 'nerdctl stop kubelet; nerdctl rm -f kubelet || exit 0'
-ExecStart=/bin/bash -c '/usr/local/bin/nerdctl run --name kubelet \\
-    --privileged \\
-    --pid host \\
-    --network host \\
-    --volume /:/rootfs:rslave,ro \\
-    --volume /etc/cni/net.d:/etc/cni/net.d:ro,z \\
-    --volume /etc/kubernetes:/etc/kubernetes:ro,z \\
-    --volume /usr/lib/os-release:/usr/lib/os-release:ro \\
-    --volume /etc/ssl/certs:/etc/ssl/certs:ro \\
-    --volume /lib/modules:/lib/modules:ro \\
-    --volume /run:/run \\
-    --volume /dev:/dev \\
-    --volume /sys/fs/cgroup:/sys/fs/cgroup \\
-    --volume /usr/share/ca-certificates:/usr/share/ca-certificates:ro \\
-    --volume /var/lib/calico:/var/lib/calico \\
-    --volume /var/lib/docker:/var/lib/docker \\
-    --volume /var/lib/containerd:/var/lib/containerd \\
-    --volume /var/lib/kubelet:/var/lib/kubelet:rshared,z \\
-    --volume /var/log:/var/log \\
-    --volume /var/run:/var/run \\
-    --volume /var/run/lock:/var/run/lock:z \\
-    --volume /opt/cni/bin:/opt/cni/bin:z \\
-    --volume /etc/machine-id:/etc/machine-id \\
-    \${CONTAINER_INFRA_PREFIX:-quay.io/poseidon/}kubelet:\${KUBE_TAG} \\
-    \$KUBE_LOG_LEVEL \$KUBELET_API_SERVER \$KUBELET_ADDRESS \$KUBELET_PORT \$KUBELET_HOSTNAME \$KUBELET_ARGS'
-ExecStop=/bin/bash -c 'nerdctl stop kubelet; nerdctl rm -f kubelet || exit 0'
+ExecStart=/usr/bin/kubelet \$KUBE_LOG_LEVEL \$KUBELET_API_SERVER \$KUBELET_ADDRESS \$KUBELET_PORT \$KUBELET_HOSTNAME \$KUBELET_ARGS
 Delegate=yes
 Restart=always
 RestartSec=10
