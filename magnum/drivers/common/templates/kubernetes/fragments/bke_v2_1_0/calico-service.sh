@@ -12,7 +12,7 @@ if [ "$NETWORK_DRIVER" = "calico" ]; then
         echo "Waiting for Kubernetes API..."
         sleep 5
     done
-    CALICO_TIGERA_MANIFEST_URL="https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/tigera-operator.yaml"
+    CALICO_TIGERA_MANIFEST_URL="https://raw.githubusercontent.com/projectcalico/calico/v3.31.3/manifests/tigera-operator.yaml"
     if ! (kubectl get ns | grep tigera-operator); then
       kubectl create -f ${CALICO_TIGERA_MANIFEST_URL}
     else
@@ -22,7 +22,7 @@ if [ "$NETWORK_DRIVER" = "calico" ]; then
     cat <<EOF | kubectl apply -f -
 ---
 # This section includes base Calico installation configuration.
-# For more information, see: https://projectcalico.docs.tigera.io/master/reference/installation/api#operator.tigera.io/v1.Installation
+# For more information, see: https://docs.tigera.io/calico/latest/reference/installation/api#operator.tigera.io/v1.Installation
 apiVersion: operator.tigera.io/v1
 kind: Installation
 metadata:
@@ -30,21 +30,36 @@ metadata:
 spec:
   # Configures Calico networking.
   calicoNetwork:
-    # Note: The ipPools section cannot be modified post-install.
     ipPools:
-    - blockSize: 26
-      cidr: ${CALICO_IPV4POOL}
-      encapsulation: None
-      natOutgoing: Enabled
-      nodeSelector: all()
+      - name: default-ipv4-ippool
+        blockSize: 26
+        cidr: ${CALICO_IPV4POOL}
+        encapsulation: VXLANCrossSubnet
+        natOutgoing: Enabled
+        nodeSelector: all()
+
 ---
 # This section configures the Calico API server.
-# For more information, see: https://projectcalico.docs.tigera.io/master/reference/installation/api#operator.tigera.io/v1.APIServer
+# For more information, see: https://docs.tigera.io/calico/latest/reference/installation/api#operator.tigera.io/v1.APIServer
 apiVersion: operator.tigera.io/v1
-kind: APIServer 
-metadata: 
-  name: default 
+kind: APIServer
+metadata:
+  name: default
 spec: {}
+
+---
+# Configures the Calico Goldmane flow aggregator.
+apiVersion: operator.tigera.io/v1
+kind: Goldmane
+metadata:
+  name: default
+
+---
+# Configures the Calico Whisker observability UI.
+apiVersion: operator.tigera.io/v1
+kind: Whisker
+metadata:
+  name: default
 EOF
 fi
 

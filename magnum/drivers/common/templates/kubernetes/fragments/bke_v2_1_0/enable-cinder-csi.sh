@@ -454,7 +454,7 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
             allowPrivilegeEscalation: true
-          image: ${CONTAINER_INFRA_PREFIX:-registry.k8s.io/provider-os}cinder-csi-plugin:v1.34.1
+          image: ${CONTAINER_INFRA_PREFIX:-registry.k8s.io/provider-os/}cinder-csi-plugin:v1.34.1
           args :
             - /bin/cinder-csi-plugin
             - "--v=5"
