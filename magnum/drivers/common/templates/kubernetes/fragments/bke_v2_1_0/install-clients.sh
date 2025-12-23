@@ -8,7 +8,7 @@ set -x
 
 mkdir -p /usr/local/bin/
 
-curl -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBE_TAG}/bin/linux/amd64/kubectl
+curl -sSL "https://dl.k8s.io/${KUBE_TAG}/kubernetes-client-linux-amd64.tar.gz" | tar xzfv - -O kubernetes/client/bin/kubectl > /usr/local/bin/kubectl
 chmod +x /usr/local/bin/kubectl
 
 echo "INFO Installed kubectl."
