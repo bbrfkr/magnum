@@ -573,6 +573,7 @@ metadata:
 provisioner: cinder.csi.openstack.org
 parameters:
   fsType: ext4
+allowVolumeExpansion: true
 ---
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshotClass
