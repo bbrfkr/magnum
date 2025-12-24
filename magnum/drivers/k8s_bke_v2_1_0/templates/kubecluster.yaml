@@ -139,7 +139,7 @@ parameters:
   metrics_server_chart_tag:
     type: string
     description: tag of the stable/metrics-server chart to install
-    default: v3.7.0
+    default: v3.13.0
 
   minion_flavor:
     type: string
@@ -491,12 +491,12 @@ parameters:
   etcd_tag:
     type: string
     description: tag of the etcd system container
-    default: v3.4.6
+    default: v3.6.7
 
   coredns_tag:
     type: string
     description: tag for coredns
-    default: 1.6.6
+    default: 1.13.2
 
   flannel_tag:
     type: string
@@ -516,7 +516,7 @@ parameters:
   kube_dashboard_version:
     type: string
     description: version of kubernetes dashboard used for kubernetes cluster
-    default: v2.0.0
+    default: v7.14.0
 
   metrics_scraper_tag:
     type: string
@@ -590,11 +590,13 @@ parameters:
     default: ""
     hidden: true
 
+  # unusable. fixed: 3.31.3
   calico_tag:
     type: string
     description: tag of the calico containers used to provision the calico node
-    default: v3.21.2
+    default: v3.31.3
 
+  # unusable.
   calico_kube_controllers_tag:
     type: string
     description: tag of the kube_controllers used to provision the calico node
@@ -605,6 +607,7 @@ parameters:
     description: Configure the IP pool from which Pod IPs will be chosen
     default: "10.100.0.0/16"
 
+  # unusable.
   calico_ipv4pool_ipip:
     type: string
     description: IPIP Mode to use for the IPv4 POOL created at start up
@@ -814,7 +817,7 @@ parameters:
   tiller_tag:
     type: string
     description: tag of tiller container
-    default: "v2.16.7"
+    default: v2.16.7
 
   tiller_namespace:
     type: string
@@ -836,7 +839,7 @@ parameters:
     description: >
       release tag of helm client
       https://github.com/helm/helm/releases
-    default: "v3.2.1"
+    default: v3.19.0
 
   auto_healing_enabled:
     type: boolean
@@ -849,7 +852,7 @@ parameters:
     type: string
     description: >
       The service to be deployed for auto-healing.
-    default: "draino"
+    default: "magnum-auto-healer"
 
   magnum_auto_healer_tag:
     type: string
@@ -882,32 +885,32 @@ parameters:
   csi_attacher_tag:
     type: string
     description: tag of csi attacher
-    default: v2.0.0
+    default: v4.8.0
 
   csi_provisioner_tag:
     type: string
     description: tag of csi provisioner
-    default: v1.4.0
+    default: v5.2.0
 
   csi_snapshotter_tag:
     type: string
     description: tag of csi snapshotter
-    default: v1.2.2
+    default: v8.2.0
 
   csi_resizer_tag:
     type: string
     description: tag of csi resizer
-    default: v0.3.0
+    default: v1.13.0
 
   csi_node_driver_registrar_tag:
     type: string
     description: tag of csi node driver registrar
-    default: v1.1.0
+    default: v2.13.0
 
   node_problem_detector_tag:
     type: string
     description: tag of the node problem detector container
-    default: v0.6.2
+    default: v1.34.0
 
   nginx_ingress_controller_tag:
     type: string

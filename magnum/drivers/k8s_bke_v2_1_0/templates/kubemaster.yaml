@@ -593,7 +593,7 @@ parameters:
   magnum_auto_healer_tag:
     type: string
     description: tag of the magnum-auto-healer service.
-    default: "v1.15.0"
+    default: "v1.34.1"
 
   auto_scaling_enabled:
     type: boolean
