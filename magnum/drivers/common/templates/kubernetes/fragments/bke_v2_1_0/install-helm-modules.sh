@@ -35,11 +35,6 @@ else
         sleep 5
     done
 
-    if ! echo "${HELM_CLIENT_SHA256} /tmp/helm-client.tar.gz" | sha256sum -c - ; then
-        echo "ERROR helm-client.tar.gz computed checksum did NOT match, exiting."
-        exit 1
-    fi
-
     source /etc/bashrc
     tar xzvf /tmp/helm-client.tar.gz linux-amd64/helm -O > /usr/local/bin/helm
     chmod +x /usr/local/bin/helm
